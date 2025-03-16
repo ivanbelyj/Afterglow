@@ -11,12 +11,14 @@ public class MemorySimulator : MonoBehaviour
     public string debugOutput;
 
     private PerceptionStorage perceptionStorage;
-    private float timeSinceLastTick;
+    private float secondsSinceLastTick;
+
+    public PerceptionStorage PerceptionStorage => perceptionStorage;
 
     protected virtual void Awake()
     {
         perceptionStorage = new PerceptionStorage(memoryParameters);
-        timeSinceLastTick = 0f;
+        secondsSinceLastTick = 0f;
     }
 
     protected virtual void Start()
@@ -26,13 +28,13 @@ public class MemorySimulator : MonoBehaviour
 
     protected virtual void Update()
     {
-        timeSinceLastTick += Time.deltaTime;
+        secondsSinceLastTick += Time.deltaTime;
 
         // Simulate memory decay at the specified interval
-        if (timeSinceLastTick >= simulationTickSeconds)
+        if (secondsSinceLastTick >= simulationTickSeconds)
         {
             SimulateMemoryDecay();
-            timeSinceLastTick = 0f;
+            secondsSinceLastTick = 0f;
         }
     }
 
