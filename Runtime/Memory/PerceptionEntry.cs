@@ -61,7 +61,7 @@ public class PerceptionEntry
     }
 
     /// <summary>
-    /// Controls the speed of transition from active memory to passive memory.
+    /// Controls the speed of transition from work memory to long-term memory.
     /// Set for temporary perceptions only, null for memories that are considered
     /// permanent on the scale of the game.
     /// </summary>

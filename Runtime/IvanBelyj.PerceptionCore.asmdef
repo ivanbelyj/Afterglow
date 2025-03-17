@@ -1,3 +1,17 @@
 {
-	"name": "IvanBelyj.PerceptionCore"
+    "name": "IvanBelyj.PerceptionCore",
+    "rootNamespace": "",
+    "references": [
+        "GUID:23c5eafd234b88744aaaa07b22801cd3",
+        "GUID:30817c1a0e6d646d99c048fc403f5979"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

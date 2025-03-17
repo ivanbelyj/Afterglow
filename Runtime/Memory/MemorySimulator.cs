@@ -15,9 +15,12 @@ public class MemorySimulator : MonoBehaviour
 
     public PerceptionStorage PerceptionStorage => perceptionStorage;
 
+    private SensoryMemoryManager sensoryMemoryManager;
+
     protected virtual void Awake()
     {
         perceptionStorage = new PerceptionStorage(memoryParameters);
+        sensoryMemoryManager = new(perceptionStorage);
         secondsSinceLastTick = 0f;
     }
 
@@ -36,6 +39,11 @@ public class MemorySimulator : MonoBehaviour
             SimulateMemoryDecay();
             secondsSinceLastTick = 0f;
         }
+    }
+
+    public void RegisterSensoryMemory(ISensoryMemoryStorage sensoryMemory)
+    {
+        sensoryMemoryManager.RegisterSensoryMemory(sensoryMemory);
     }
 
     public void AddMemory(PerceptionEntry perceptionEntry)
@@ -72,17 +80,17 @@ public class MemorySimulator : MonoBehaviour
     {
         debugOutput = $"Memory Count: {perceptionStorage.MemoryCount}\n" +
             $"Deep Memory Count: {perceptionStorage.DeepMemoryCount}\n" +
-            $"Active Memory Count: {perceptionStorage.GetActiveMemoryCount()}\n" +
-            $"Passive Memory Count: {perceptionStorage.GetPassiveMemoryCount()}\n\n" +
+            $"Work Memory Count: {perceptionStorage.GetWorkMemoryCount()}\n" +
+            $"Long-term Memory Count: {perceptionStorage.GetLongTermMemoryCount()}\n\n" +
 
-            "=======================================\n" +
-            "= Active Memory Verbal Representation =\n" +
-            "=======================================\n" +
-            perceptionStorage.GetActiveMemoryVerbalRepresentation(true) + "\n\n" +
+            "=================\n" +
+            "=  Work Memory  =\n" +
+            "=================\n" +
+            perceptionStorage.GetWorkMemoryVerbalRepresentation(true) + "\n\n" +
 
-            "========================================\n" +
-            "= Passive Memory Verbal Representation =\n" +
-            "========================================\n" +
-            perceptionStorage.GetPassiveMemoryVerbalVerbalRepresentation(true);
+            "======================\n" +
+            "=  Long-term Memory  =\n" +
+            "======================\n" +
+            perceptionStorage.GetLongTermMemoryVerbalVerbalRepresentation(true);
     }
 }

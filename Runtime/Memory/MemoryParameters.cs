@@ -4,9 +4,9 @@ using UnityEngine;
 public record MemoryParameters
 {
     /// <summary>
-    /// Minimal memory entry accessibility value to treat it as active memory
+    /// Minimal memory entry accessibility value to treat it as work memory
     /// </summary>
-    public float activeMemoryAccessibilityThreshold = 0.9f;
+    public float workMemoryAccessibilityThreshold = 0.9f;
 
     /// <summary>
     /// The minimum accessibility value required for memory existence

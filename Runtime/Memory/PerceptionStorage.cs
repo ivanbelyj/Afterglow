@@ -44,7 +44,7 @@ public class PerceptionStorageCore
 public class PerceptionStorage
 {
     private readonly MemoryParameters memoryParameters;
-    private readonly PerceptionStorageCore perceptionStorageCore = new();
+    private readonly PerceptionStorageCore perceptionStorage = new();
 
     // Recovery can be implemented later
     private List<PerceptionEntry> deepMemory = new();
@@ -54,38 +54,38 @@ public class PerceptionStorage
         this.memoryParameters = memoryParameters;
     }
 
-    public int MemoryCount => perceptionStorageCore.Count;
+    public int MemoryCount => perceptionStorage.Count;
     public int DeepMemoryCount => deepMemory.Count;
 
-    public int GetActiveMemoryCount() => GetActiveMemory().Count();
-    public int GetPassiveMemoryCount() => GetPassiveMemory().Count();
+    public int GetWorkMemoryCount() => GetWorkMemory().Count();
+    public int GetLongTermMemoryCount() => GetLongTermMemory().Count();
 
     public void AddMemory(params PerceptionEntry[] perceptionEntries)
     {
-        perceptionStorageCore.AddMemory(perceptionEntries);
+        perceptionStorage.AddMemory(perceptionEntries);
     }
 
     /// <summary>
-    /// Active memory is a memory type used in most cases
+    /// Work memory is a memory type used in most cases
     /// </summary>
     /// <param name="markers">If empty, entries are not filtered by markers</param>
-    public IEnumerable<PerceptionEntry> GetActiveMemory(params string[] markers)
+    public IEnumerable<PerceptionEntry> GetWorkMemory(params string[] markers)
     {
         return GetMemory(
-            memoryParameters.activeMemoryAccessibilityThreshold,
+            memoryParameters.workMemoryAccessibilityThreshold,
             null,
             markers);
     }
 
     /// <summary>
-    /// Passive memory is a memory type used in some cases
+    /// Long-memory is a memory type used in some cases
     /// </summary>
     /// <param name="markers">If empty, entries are not filtered by markers</param>
-    public IEnumerable<PerceptionEntry> GetPassiveMemory(params string[] markers)
+    public IEnumerable<PerceptionEntry> GetLongTermMemory(params string[] markers)
     {
         return GetMemory(
             memoryParameters.memoryAccessibilityThreshold,
-            memoryParameters.activeMemoryAccessibilityThreshold,
+            memoryParameters.workMemoryAccessibilityThreshold,
             markers);
     }
 
@@ -101,24 +101,24 @@ public class PerceptionStorage
     }
 
     /// <summary>
-    /// Active memory text snapshot
+    /// Work memory text snapshot
     /// </summary>
-    public string GetActiveMemoryVerbalRepresentation(bool isDebug = false)
+    public string GetWorkMemoryVerbalRepresentation(bool isDebug = false)
     {
         return GetMemoryVerbalRepresentation(
-            memoryParameters.activeMemoryAccessibilityThreshold,
+            memoryParameters.workMemoryAccessibilityThreshold,
             null,
             isDebug);
     }
 
     /// <summary>
-    /// Passive memory text snapshot
+    /// Long-term memory text snapshot
     /// </summary>
-    public string GetPassiveMemoryVerbalVerbalRepresentation(bool isDebug = false)
+    public string GetLongTermMemoryVerbalVerbalRepresentation(bool isDebug = false)
     {
         return GetMemoryVerbalRepresentation(
             memoryParameters.memoryAccessibilityThreshold,
-            memoryParameters.activeMemoryAccessibilityThreshold,
+            memoryParameters.workMemoryAccessibilityThreshold,
             isDebug);
     }
 
@@ -130,15 +130,15 @@ public class PerceptionStorage
     /// </param>
     public void TickMemoryDecay(float simulationTickSeconds)
     {
-        foreach (var entry in perceptionStorageCore.GetAllForgettable())
+        foreach (var entry in perceptionStorage.GetAllForgettable())
         {
             entry.Accessibility = Forget(entry, simulationTickSeconds);
         }
-        var deepMemory = perceptionStorageCore
+        var deepMemory = perceptionStorage
             .GetDeepMemory(memoryParameters)
             .ToList();
         deepMemory.AddRange(deepMemory);
-        perceptionStorageCore.ClearLessAccessibleThan(memoryParameters.memoryAccessibilityThreshold);
+        perceptionStorage.ClearLessAccessibleThan(memoryParameters.memoryAccessibilityThreshold);
     }
 
     public float Forget(PerceptionEntry entry, float simulationTickSeconds)
@@ -158,6 +158,6 @@ public class PerceptionStorage
         float? maxAccessibility,
         params string[] markers)
     {
-        return perceptionStorageCore.GetMemory(minAccessibility, maxAccessibility, markers);
+        return perceptionStorage.GetMemory(minAccessibility, maxAccessibility, markers);
     }
 }

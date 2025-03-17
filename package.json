@@ -5,7 +5,9 @@
   "description": "Core perception and memory simulation package useful for AI implementation in immersive-sim games",
   "unity": "2021.3",
   "unityRelease": "9f1",
-  "dependencies": {},
+  "dependencies": {
+    "ivanbelyj.common-utilities": "git@github.com:ivanbelyj/CommonUtilitiesUnity.git"
+  },
   "author": {
     "name": "Ivan Belyj",
     "email": "ivanbelyj743@gmail.com"
