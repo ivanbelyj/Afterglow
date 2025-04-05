@@ -1,8 +1,8 @@
 {
-  "name": "ivanbelyj.perception-core",
+  "name": "ivanbelyj.afterglow",
   "version": "0.0.0",
-  "displayName": "Perception Core",
-  "description": "Core perception and memory simulation package useful for AI implementation in immersive-sim games",
+  "displayName": "Afterglow",
+  "description": "Game AI system based on perception and memories, adapted to integrate with generative AI. It includes the simulation of sensory organs, memory, spatial orientation based on memories, recognition and monitoring of threats based on knowledge, etc.",
   "unity": "2021.3",
   "unityRelease": "9f1",
   "dependencies": {
