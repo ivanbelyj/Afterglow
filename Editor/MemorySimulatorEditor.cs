@@ -36,10 +36,11 @@ public class MemorySimulatorEditor : Editor
 
         if (simulator != null)
         {
-            if (GUILayout.Button("Add Memory"))
-            {
-                simulator.AddMemory(verbalRepresentation, retentionIntensity, accessibility, null);
-            }
+            // Todo: implement adding perceptions through the editor
+            // if (GUILayout.Button("Add Memory"))
+            // {
+            //     simulator.AddMemory(verbalRepresentation, retentionIntensity, accessibility, null);
+            // }
 
             GUILayout.Space(10);
             GUILayout.Label("Debug Output", EditorStyles.boldLabel);

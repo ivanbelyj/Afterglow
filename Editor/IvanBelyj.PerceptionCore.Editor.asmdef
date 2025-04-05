@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "UnityEditor.UI",
-        "IvanBelyj.PerceptionCore"
+        "IvanBelyj.PerceptionCore",
+        "IvanBelyj.CommonUtilities"
     ],
     "includePlatforms": [
         "Editor"
