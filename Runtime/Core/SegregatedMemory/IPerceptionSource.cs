@@ -3,6 +3,6 @@ using UnityEngine;
 
 public interface IPerceptionSource
 {
-    uint PerceptionSourceLayerMask { get; }
+    string PerceptionSourceKey { get; }
     IEnumerable<PerceptionEntry> GetPerceptions(params string[] markers);
 }

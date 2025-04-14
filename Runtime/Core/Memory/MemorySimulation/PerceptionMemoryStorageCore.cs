@@ -69,6 +69,6 @@ internal class PerceptionMemoryStorageCore
         return memoryEntries.Where(entry =>
             (minAccessibility == null || entry.Accessibility >= minAccessibility) &&
             (maxAccessibility == null || entry.Accessibility < maxAccessibility) &&
-            (!markers.Any() || markers.Any(marker => entry.Markers.Contains(marker))));
+            (!markers.Any() || markers.All(marker => entry.Markers.Contains(marker))));
     }
 }

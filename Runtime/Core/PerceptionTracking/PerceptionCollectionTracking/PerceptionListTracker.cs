@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
-public sealed class PerceptionListTracker : PerceptionCollectionTrackerBase<List<PerceptionEntry>, ReadOnlyCollection<PerceptionEntry>>
+public sealed class PerceptionListTracker : PerceptionCollectionTrackerBase<List<PerceptionEntry>, IReadOnlyList<PerceptionEntry>>
 {
     private readonly List<PerceptionEntry> list = new();
 
@@ -10,7 +9,7 @@ public sealed class PerceptionListTracker : PerceptionCollectionTrackerBase<List
     {
     }
 
-    protected override ReadOnlyCollection<PerceptionEntry> AsReadOnly() => list.AsReadOnly();
+    protected override IReadOnlyList<PerceptionEntry> AsReadOnly() => list.AsReadOnly();
     protected override void AddToCollection(PerceptionEntry entry) => list.Add(entry);
     protected override void RemoveFromCollection(PerceptionEntry entry) => list.Remove(entry);
 }

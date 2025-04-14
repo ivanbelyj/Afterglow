@@ -6,21 +6,23 @@ using static PerceptionEntryCoreDataKeys;
 
 public static class PerceptionEntryCoreExtensions
 {
-    public static bool HasKey(this PerceptionEntry perception, string key)
-    {
-        return perception.PerceptionData.ContainsKey(key);
-    }
+    public static bool TryGetEntityType(
+        this PerceptionEntry perceptionEntry,
+        out string entityType)
+        => perceptionEntry.TryGet(EntityType, out entityType);
 
-    public static T GetValue<T>(this PerceptionEntry perception, string key)
-    {
-        if (!perception.HasKey(key))
-            throw new KeyNotFoundException($"Key {key} not found in perception data");
-
-        return (T)perception.PerceptionData[key];
-    }
+    public static bool TryGetEntityId(
+        this PerceptionEntry perceptionEntry,
+        out Guid entityId)
+        => perceptionEntry.TryGet(EntityId, out entityId);
     
-    public static bool HasEntityId(this PerceptionEntry perception) => perception.HasKey(EntityId);
-    public static bool HasPosition(this PerceptionEntry perception) => perception.HasKey(Position);
-    public static Guid GetEntityId(this PerceptionEntry perception) => perception.GetValue<Guid>(EntityId);
-    public static SpatialAwarenessPosition GetPosition(this PerceptionEntry perception) => perception.GetValue<SpatialAwarenessPosition>(Position);
+    public static bool TryGetPosition(
+        this PerceptionEntry perception,
+        out SpatialAwarenessPosition position)
+        => perception.TryGet(Position, out position);
+    
+    public static bool HasEntityId(this PerceptionEntry perception)
+        => perception.HasKey(EntityId);
+    public static bool HasPosition(this PerceptionEntry perception)
+        => perception.HasKey(Position);
 }

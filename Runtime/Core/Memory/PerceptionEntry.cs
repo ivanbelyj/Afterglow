@@ -56,7 +56,7 @@ public record PerceptionStateChangedEventArgs
     }
 }
 
-public class PerceptionEntry
+public class PerceptionEntry : IUntypedStorage
 {
     /// <summary>
     /// Typically called by memory simulation system
@@ -196,6 +196,8 @@ public class PerceptionEntry
         }
     }
 
+    public bool IsDestructed => isDestructed;
+
     public void Destruct()
     {
         EnsureNotDestructed();
@@ -217,6 +219,8 @@ public class PerceptionEntry
                 $"{nameof(PerceptionEntry)} cannot be set to null");
         }
     }
+
+    Dictionary<string, object> IUntypedStorage.Data => PerceptionData;
 
     internal PerceptionEntry(double? timestamp)
     {

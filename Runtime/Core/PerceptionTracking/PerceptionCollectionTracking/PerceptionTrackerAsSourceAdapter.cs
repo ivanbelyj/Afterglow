@@ -6,13 +6,13 @@ public class PerceptionTrackerAsSourceAdapter<TCollection, TReadOnlyCollection> 
 {
     private readonly PerceptionCollectionTrackerBase<TCollection, TReadOnlyCollection> tracker;
 
-    public uint PerceptionSourceLayerMask { get; private set; }
+    public string PerceptionSourceKey { get; private set; }
 
     public PerceptionTrackerAsSourceAdapter(
-        uint perceptionSourceLayerMask,
+        string perceptionSourceKey,
         PerceptionCollectionTrackerBase<TCollection, TReadOnlyCollection> tracker)
     {
-        PerceptionSourceLayerMask = perceptionSourceLayerMask;
+        PerceptionSourceKey = perceptionSourceKey;
         this.tracker = tracker;
     }
 

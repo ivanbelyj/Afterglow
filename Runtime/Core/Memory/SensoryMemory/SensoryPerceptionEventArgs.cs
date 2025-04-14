@@ -1,15 +1,28 @@
 using UnityEngine;
+using System;
 
 public record SensoryPerceptionEventArgs
 {
-    public string UniqueMarker { get; set; }
-    public PerceptionEntry PerceptionEntry { get; set; }
-    
+    public string[] IdentifyingMarkers { get; }
+    public PerceptionEntry PerceptionEntry { get; }
+
     public SensoryPerceptionEventArgs(
-        string uniqueMarker,
+        string[] identifyingMarkers,
         PerceptionEntry perceptionEntry)
     {
-        UniqueMarker = uniqueMarker;
-        PerceptionEntry = perceptionEntry;
+        if (identifyingMarkers == null)
+        {
+            throw new ArgumentNullException(nameof(identifyingMarkers));
+        }
+
+        if (identifyingMarkers.Length == 0)
+        {
+            throw new ArgumentException(
+                "Identifying markers array cannot be empty", 
+                nameof(identifyingMarkers));
+        }
+
+        IdentifyingMarkers = identifyingMarkers;
+        PerceptionEntry = perceptionEntry ?? throw new ArgumentNullException(nameof(perceptionEntry));
     }
 }

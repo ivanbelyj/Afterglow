@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 
 public class PerceptionMemoryStorage : IPerceptionSource
 {
-    private readonly uint perceptionSourceLayerMask;
+    private readonly string perceptionSourceKey;
 
     private readonly MemoryParameters memoryParameters;
     private readonly PerceptionMemoryStorageCore perceptionStorage = new();
@@ -26,10 +26,10 @@ public class PerceptionMemoryStorage : IPerceptionSource
     private List<PerceptionEntry> deepMemory = new();
 
     public PerceptionMemoryStorage(
-        uint perceptionSourceLayerMask,
+        string perceptionSourceKey,
         MemoryParameters memoryParameters)
     {
-        this.perceptionSourceLayerMask = perceptionSourceLayerMask;
+        this.perceptionSourceKey = perceptionSourceKey;
         this.memoryParameters = memoryParameters;
         operatingDecorator = new(this);
     }
@@ -37,20 +37,20 @@ public class PerceptionMemoryStorage : IPerceptionSource
     public int MemoryCount => perceptionStorage.Count;
     public int DeepMemoryCount => deepMemory.Count;
 
-    public uint PerceptionSourceLayerMask => perceptionSourceLayerMask;
+    public string PerceptionSourceKey => perceptionSourceKey;
 
     public int GetWorkMemoryCount() => GetWorkMemory().Count();
     public int GetLongTermMemoryCount() => GetLongTermMemory().Count();
 
-    public void AddOrReplace(string uniqueMarker, PerceptionEntry entry)
+    public void AddOrReplace(string[] identifyingMarkers, PerceptionEntry entry)
     {
-        var memoryToRemove = GetMemory(uniqueMarker).ToList();
+        var memoryToRemove = GetMemory(identifyingMarkers).ToList();
         
         if (memoryToRemove.Count > 1)
         {
             Debug.LogError(
                 $"Expected to replace 1 perception, but found " +
-                $"{memoryToRemove.Count}. Marker: '{uniqueMarker}'");
+                $"{memoryToRemove.Count}. Markers: '{string.Join(", ", identifyingMarkers)}'");
         }
 
         DestructMemory(memoryToRemove);

@@ -71,7 +71,8 @@ public abstract class VisionPerceptorCore : MonoBehaviour
     private void InitializeSensoryMemory()
     {
         sensoryMemory = new(GetComponent<IRecognizer<Sight>>());
-        GetComponent<SegregatedMemoryManager>().RegisterSensoryMemory(sensoryMemory);
+        GetComponent<PerceptionStorageRegistrar>()
+            .RegisterSensoryMemory(sensoryMemory);
     }
 
     private void OnRadiusEnter(object sender, RadiusDetectorEventArgs eventArgs)

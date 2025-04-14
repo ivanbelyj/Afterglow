@@ -1,13 +1,14 @@
 using System.Linq;
 using UnityEngine;
 
-public class SensoryMemoryManager
+[RequireComponent(typeof(MemorySimulator))]
+public class SensoryMemoryManager : MonoBehaviour
 {
-    private readonly PerceptionMemoryStorage perceptionStorage;
+    private PerceptionMemoryStorage perceptionStorage;
 
-    public SensoryMemoryManager(PerceptionMemoryStorage perceptionStorage)
+    private void Start()
     {
-        this.perceptionStorage = perceptionStorage;
+        perceptionStorage = GetComponent<MemorySimulator>().PerceptionStorage;
     }
 
     public void RegisterSensoryMemory(ISensoryMemoryStorage sensoryMemory)
@@ -20,7 +21,7 @@ public class SensoryMemoryManager
         SensoryPerceptionEventArgs eventArgs)
     {
         perceptionStorage.AddOrReplace(
-            eventArgs.UniqueMarker,
+            eventArgs.IdentifyingMarkers,
             eventArgs.PerceptionEntry);
     }
 }

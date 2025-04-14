@@ -3,12 +3,8 @@ using UnityEngine;
 
 public static class PerceptionMarkerUtilsCore
 {
-    // TODO
-    public static string[] GetForEntity(Guid entityId)
+    public static string GetEntityUniqueMarker(Guid entityId)
     {
-        return new string[] { GetUniqueForVisionPerception(entityId) };
+        return $"entity-{entityId}";
     }
-
-    public static string GetUniqueForVisionPerception(Guid entityId)
-        => $"sight_{entityId}";
 }

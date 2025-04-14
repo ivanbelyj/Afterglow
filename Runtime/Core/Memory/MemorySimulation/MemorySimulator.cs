@@ -3,6 +3,9 @@ using UnityEngine;
 public class MemorySimulator : MonoBehaviour
 {
     [SerializeField]
+    private SegregatedMemoryManager segregatedMemoryManager;
+
+    [SerializeField]
     private MemoryParameters memoryParameters;
 
     [SerializeField]
@@ -18,8 +21,14 @@ public class MemorySimulator : MonoBehaviour
     protected virtual void Awake()
     {
         perceptionStorage = new PerceptionMemoryStorage(
-            (uint)SegregatedPerceptionLayerCore.CommonMemory,
+            CoreSegregatedPerceptionSources.SimulatedMemory,
             memoryParameters);
+
+        if (segregatedMemoryManager == null)
+        {
+            Debug.LogError($"{nameof(segregatedMemoryManager)} is required");
+        }
+        segregatedMemoryManager.RegisterPerceptionSource(perceptionStorage);
         
         secondsSinceLastTick = 0f;
     }
@@ -52,7 +61,6 @@ public class MemorySimulator : MonoBehaviour
         perceptionStorage.TickMemoryDecay(simulationTickSeconds);
 
 #if UNITY_EDITOR
-        // Update debug output
         UpdateDebugOutput();
 #endif
     }

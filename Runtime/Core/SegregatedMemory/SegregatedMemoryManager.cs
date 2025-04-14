@@ -2,59 +2,48 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[RequireComponent(typeof(MemorySimulator))]
 public class SegregatedMemoryManager : MonoBehaviour, ISegregatedMemoryProvider
 {
-    private MemorySimulator memorySimulator;
-    private SensoryMemoryManager sensoryMemoryManager;
+    private Dictionary<string, IPerceptionSource> perceptionSourcesByKey = new();
 
-    private List<IPerceptionSource> perceptionSources = new();
+    public IReadOnlyDictionary<string, IPerceptionSource> PerceptionSources
+        => perceptionSourcesByKey;
 
     protected virtual void Awake()
     {
-        memorySimulator = GetComponent<MemorySimulator>();
+        
     }
 
     protected virtual void Start()
     {
-        sensoryMemoryManager = new(memorySimulator.PerceptionStorage);
-        RegisterPerceptionSource(memorySimulator.PerceptionStorage);
-    }
-
-    public void RegisterSensoryMemory(ISensoryMemoryStorage sensoryMemory)
-    {
-        sensoryMemoryManager.RegisterSensoryMemory(sensoryMemory);
-        RegisterPerceptionSource(sensoryMemory);
+        
     }
 
     public void RegisterPerceptionSource(IPerceptionSource perceptionSource)
     {
-        perceptionSources.Add(perceptionSource);
+        perceptionSourcesByKey.Add(
+            perceptionSource.PerceptionSourceKey,
+            perceptionSource);
+    }
+
+    public bool TryGetRegisteredPerceptionSource(
+        string perceptionSourceKey,
+        out IPerceptionSource perceptionSource)
+        => perceptionSourcesByKey.TryGetValue(perceptionSourceKey, out perceptionSource);
+
+    public List<PerceptionEntry> GetPerceptions(
+        string perceptionSourceKey,
+        params string[] markers)
+    {
+        return GetPerceptions(perceptionSourcesByKey[perceptionSourceKey], markers);
     }
 
     public List<PerceptionEntry> GetPerceptions(
-        uint perceptionSourceMask,
+        IPerceptionSource perceptionSource,
         params string[] markers)
     {
-        return GetPerceptionSources(perceptionSourceMask)
-            .SelectMany(source => source.GetPerceptions(markers))
+        return perceptionSource
+            .GetPerceptions(markers)
             .ToList();
     }
-
-    private IEnumerable<IPerceptionSource> GetPerceptionSources(
-        uint perceptionSourceLayerMask)
-    {
-        foreach (var perceptionSource in perceptionSources)
-        {
-            if (Satisfies(
-                perceptionSource.PerceptionSourceLayerMask,
-                perceptionSourceLayerMask))
-            {
-                yield return perceptionSource;
-            }
-        }
-    }
-
-    private bool Satisfies(uint baseLayerMask, uint requestedLayerMask)
-        => (baseLayerMask & requestedLayerMask) != 0;
 }

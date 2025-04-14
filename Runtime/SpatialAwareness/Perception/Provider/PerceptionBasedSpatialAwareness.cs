@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[RequireComponent(typeof(PerceptionTrackingStorageRegistrar))]
+[RequireComponent(typeof(PerceptionStorageRegistrar))]
 public class PerceptionBasedSpatialAwareness : MonoBehaviour, ISpatialAwarenessProvider
 {
     [SerializeField]
@@ -31,9 +31,9 @@ public class PerceptionBasedSpatialAwareness : MonoBehaviour, ISpatialAwarenessP
 
     private void RegisterMemoryLayer()
     {
-        GetComponent<PerceptionTrackingStorageRegistrar>()
+        GetComponent<PerceptionStorageRegistrar>()
             .RegisterStorage(
-                (uint)SegregatedPerceptionLayerCore.SpatialAwareness,
+                CoreSegregatedPerceptionSources.SpatialAwareness,
                 new PerceptionListTracker(entry => entry.HasPosition()));
     }
 
@@ -45,7 +45,7 @@ public class PerceptionBasedSpatialAwareness : MonoBehaviour, ISpatialAwarenessP
     public IEnumerable<SpatialAwarenessPosition> GetKnownPositions()
     {
         return segregatedMemoryProvider
-            .GetPerceptions((uint)SegregatedPerceptionLayerCore.SpatialAwareness)
+            .GetPerceptions(CoreSegregatedPerceptionSources.SpatialAwareness)
             .Select(x => x.GetSpatialAwarenessPosition());
     }
 

@@ -22,7 +22,6 @@ public class SpatialAwarenessPerceptionEnricher : IPerceptionEnricher<Sight>
         )
     {
         perceptionEntry.PerceptionData[Position] = spatialAwarenessPosition;
-        perceptionEntry.Markers.Add(HasPosition);
         // foreach (var marker in markers) 
         // {
         //     perceptionEntry.Markers.Add(marker);

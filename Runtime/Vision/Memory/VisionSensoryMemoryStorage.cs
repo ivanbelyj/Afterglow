@@ -4,7 +4,7 @@ using System.Linq;
 using Mirror;
 using UnityEngine;
 
-using static PerceptionMarkerUtilsCore;
+using static VisionPerceptionMarkerUtils;
 
 /// <summary>
 /// Stores currently percepted vision data
@@ -19,7 +19,7 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
     private readonly Dictionary<Guid, PerceptedSightData> perceptionSightDataByEntityId = new();
     private readonly IRecognizer<Sight> perceptionRecognizer;
 
-    public uint PerceptionSourceLayerMask => (uint)SegregatedPerceptionLayerCore.VisionSensoryMemory;
+    public string PerceptionSourceKey => CoreSegregatedPerceptionSources.VisionSensoryMemory;
 
     public VisionSensoryMemoryStorage(IRecognizer<Sight> perceptionRecognizer)
     {
@@ -28,11 +28,7 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
 
     public void CaptureSight(Sight sight, float distance)
     {
-        var perceptedSightData = new PerceptedSightData()
-        {
-            Distance = distance,
-            PerceptionEntry = ToPerception(sight)
-        };
+        var perceptedSightData = new PerceptedSightData(distance, ToPerception(sight));
 
         // Debug.Log($"Captured sight: " + sight.VerbalRepresentation + $" [{sight.transform.parent.gameObject.name}]");
 
@@ -58,7 +54,7 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
         perceptionSightDataByEntityId.Remove(sight.EntityId);
         SensoryPerceptionReleased?.Invoke(
             this,
-            new(GetUniqueForVisionPerception(sight.EntityId), data.PerceptionEntry));
+            new(GetIdentifyingMarkersForVisionPerception(sight.EntityId), data.PerceptionEntry));
 
         SightReleased?.Invoke(this, new() {
             PerceptedSightData = data,
@@ -69,7 +65,10 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
     private PerceptionEntry ToPerception(Sight sight)
     {
         var perception = perceptionRecognizer.Recognize(sight);
-        perception.Markers.Add(GetUniqueForVisionPerception(sight.EntityId));
+        foreach (var marker in GetIdentifyingMarkersForVisionPerception(sight.EntityId))
+        {
+            perception.Markers.Add(marker);
+        }
         return perception;
     }
 

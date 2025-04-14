@@ -8,9 +8,20 @@ public class VisionPerceptionEnricher : IPerceptionEnricher<Sight>
     public void EnrichPerception(PerceptionEntry perception, Sight sight)
     {
         perception.Accessibility = 1f;
+
         // TODO:
         // perception.VerbalRepresentation = GetVisionMemoryVerbalRepresentation(sight);
-        perception.PerceptionData[EntityId] = sight.EntityId;
+        
+        perception.Set(EntityId, sight.EntityId);
+        perception.Set(EntityType, sight.EntityType);
+        if (sight.TryGetAgentAttentionData(out var attentionData))
+        {
+            foreach (var attentionDataItem in attentionData)
+            {
+                perception.AddAgentAttentionData(attentionDataItem);
+            }
+        }
+
         // TODO: not that type
         // perception.PerceptionData[Position] = sight.transform.position;
     }

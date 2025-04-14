@@ -5,6 +5,6 @@ using UnityEngine;
 public interface ISegregatedMemoryProvider
 {
     List<PerceptionEntry> GetPerceptions(
-        uint perceptionSourceMask,
+        string perceptionSourceKey,
         params string[] markers);
 }
