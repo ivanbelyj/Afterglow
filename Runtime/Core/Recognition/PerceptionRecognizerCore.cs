@@ -19,15 +19,14 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
         recognitionHandlers.Add(recognitionHandler);
     }
 
-    public PerceptionEntry RecognizeTranscoded<TRepresentation>(
-        IEnumerable<IPerceptionEnricher<TRepresentation>> enrichers,
+    public PerceptionEntry RecognizeEnriched<TRepresentation>(
         TRepresentation representation)
     {
         var perception = CreateBasePerception();
         
         if (perception != null)
         {
-            foreach (var enricher in enrichers)
+            foreach (var enricher in GetEnricherProvider<TRepresentation>().GetEnrichers())
             {
                 enricher.EnrichPerception(perception, representation);
             }
@@ -39,6 +38,8 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
         
         return perception;
     }
+
+    protected abstract IEnricherProvider<TRepresentation> GetEnricherProvider<TRepresentation>();
 
     protected virtual IPerceptionTrackingStorage GetTrackingStorage()
     {

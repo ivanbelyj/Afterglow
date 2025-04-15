@@ -14,9 +14,15 @@ public class VisionPerceptionEnricher : IPerceptionEnricher<Sight>
         
         perception.Set(EntityId, sight.EntityId);
         perception.Set(EntityType, sight.EntityType);
+        
         if (sight.TryGetAgentAttentionData(out var attentionData))
         {
             perception.SetAgentAttentionData(attentionData);
+        }
+
+        if (sight.TryGetMovementSpeed(out var movementSpeed))
+        {
+            perception.SetMovementSpeed(movementSpeed);
         }
 
         // TODO: not that type

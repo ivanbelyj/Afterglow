@@ -80,7 +80,7 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
 
     public void Tick()
     {
-        var threats = threatPerceptionProvider.GetActualThreats();
+        var threats = threatPerceptionProvider.GetActualThreats(entityProvider.Entity.Id);
 
         currentProcessingResult = Process(threats);
 
@@ -133,7 +133,7 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
         var estimates = currentProcessingResult
             .Targeting
             .OrderedTargetingEstimates
-            .Select(x => new { estimate =  x.ThreatEstimate, utility = x.Utility })
+            .Select(x => new { estimate = x.ThreatEstimate, utility = x.Utility })
             .Concat(currentProcessingResult
                 .Targeting
                 .Ignored
@@ -149,7 +149,7 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
         {
             var focusDecrease = Mathf.Approximately(maxUtility, 0f)
                 ? 0
-                : (estimate.utility / maxUtility);
+                : (1f - estimate.utility / maxUtility);
             yield return new AgentAttentionData() {
                 TargetEntityId = estimate.estimate.EntityId,
                 ThreatAwareness = 1f,

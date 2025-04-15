@@ -19,6 +19,8 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
     private readonly Dictionary<Guid, PerceptedSightData> perceptionSightDataByEntityId = new();
     private readonly IRecognizer<Sight> perceptionRecognizer;
 
+    public IReadOnlyDictionary<Guid, PerceptedSightData> PerceptionSightDataByEntityId => perceptionSightDataByEntityId;
+
     public string PerceptionSourceKey => CoreSegregatedPerceptionSources.VisionSensoryMemory;
 
     public VisionSensoryMemoryStorage(IRecognizer<Sight> perceptionRecognizer)
@@ -28,7 +30,7 @@ public class VisionSensoryMemoryStorage : ISensoryMemoryStorage
 
     public void CaptureSight(Sight sight, float distance)
     {
-        var perceptedSightData = new PerceptedSightData(distance, ToPerception(sight));
+        var perceptedSightData = new PerceptedSightData(distance, ToPerception(sight), sight);
 
         // Debug.Log($"Captured sight: " + sight.VerbalRepresentation + $" [{sight.transform.parent.gameObject.name}]");
 

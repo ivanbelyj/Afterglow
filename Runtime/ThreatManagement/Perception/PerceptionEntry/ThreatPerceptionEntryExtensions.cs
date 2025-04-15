@@ -27,4 +27,14 @@ public static class ThreatPerceptionEntryExtensions
         this PerceptionEntry perceptionEntry,
         List<AgentAttentionData> entityAttentionData)
         => perceptionEntry.Set(AgentAttention, entityAttentionData);
+
+    public static bool TryGetMovementSpeed(
+        this PerceptionEntry perceptionEntry,
+        out float movementSpeed)
+        => perceptionEntry.TryGet(MovementSpeed, out movementSpeed);
+
+    public static void SetMovementSpeed(
+        this PerceptionEntry perceptionEntry,
+        float movementSpeed)
+        => perceptionEntry.Set(MovementSpeed, movementSpeed);
 }

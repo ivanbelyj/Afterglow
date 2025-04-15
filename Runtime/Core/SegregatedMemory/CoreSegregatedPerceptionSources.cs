@@ -10,5 +10,5 @@ public static class CoreSegregatedPerceptionSources
     public const string SimulatedMemory = nameof(SimulatedMemory);
     public const string VisionSensoryMemory = nameof(VisionSensoryMemory);
     public const string SpatialAwareness = nameof(SpatialAwareness);
-    public const string Threat = nameof(Threat);
+    public const string PossibleThreat = nameof(PossibleThreat);
 }

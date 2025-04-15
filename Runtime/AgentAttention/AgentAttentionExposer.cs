@@ -20,7 +20,6 @@ public class AgentAttentionExposer : MonoBehaviour
 
     public void Tick()
     {
-        Debug.Log("EXPOSE " + string.Join(", ", entityAttentionDataProvider.GetAttentionData().ToList()));
         sight.SetAgentAttentionData(entityAttentionDataProvider.GetAttentionData().ToList());
     }
 

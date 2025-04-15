@@ -10,14 +10,14 @@ public class PerceptionBasedSpatialAwareness : MonoBehaviour, ISpatialAwarenessP
 
     private ISegregatedMemoryProvider segregatedMemoryProvider;
 
-    private PerceptionPositionTracker perceptionPositionTracker = new();
+    // private PerceptionPositionTracker perceptionPositionTracker = new();
     private TimedAction timedAction = new();
 
     private void Awake()
     {
-        timedAction.AddAction(
-            () => perceptionPositionTracker.Tick(),
-            trackedPositionsUpdateIntervalInSeconds);
+        // timedAction.AddAction(
+        //     () => perceptionPositionTracker.Tick(),
+        //     trackedPositionsUpdateIntervalInSeconds);
         
         segregatedMemoryProvider = GetSegregatedMemoryProvider();
 
@@ -49,17 +49,17 @@ public class PerceptionBasedSpatialAwareness : MonoBehaviour, ISpatialAwarenessP
             .Select(x => x.GetSpatialAwarenessPosition());
     }
 
-    /// <summary>
-    /// Please, track Transform only when it's directly percepted in real-time,
-    /// then untrack it when it becomes a memory
-    /// </summary>
-    public void TrackPositionRegularly(PerceptionEntry perceptionEntry, Transform transform)
-    {
-        perceptionPositionTracker.Track(perceptionEntry, transform);
-    }
+    // /// <summary>
+    // /// Please, track Transform only when it's directly percepted in real-time,
+    // /// then untrack it when it becomes a memory
+    // /// </summary>
+    // public void TrackPositionRegularly(PerceptionEntry perceptionEntry, Transform transform)
+    // {
+    //     perceptionPositionTracker.Track(perceptionEntry, transform);
+    // }
 
-    public void Untrack(PerceptionEntry perceptionEntry)
-    {
-        perceptionPositionTracker.Untrack(perceptionEntry);
-    }
+    // public void Untrack(PerceptionEntry perceptionEntry)
+    // {
+    //     perceptionPositionTracker.Untrack(perceptionEntry);
+    // }
 }

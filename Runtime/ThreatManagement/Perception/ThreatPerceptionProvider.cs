@@ -27,15 +27,21 @@ public class ThreatPerceptionProvider : MonoBehaviour, IThreatPerceptionProvider
     {
         GetComponent<PerceptionStorageRegistrar>()
             .RegisterStorage(
-                CoreSegregatedPerceptionSources.Threat,
+                CoreSegregatedPerceptionSources.PossibleThreat,
                 new PerceptionListTracker(x => x.CanBeThreat()));
     }
 
-    public IEnumerable<IThreatPerception> GetActualThreats()
+    public IEnumerable<IThreatPerception> GetActualThreats(Guid estimateOriginEntityId)
     {
         return segregatedMemoryProvider
-            .GetPerceptions(CoreSegregatedPerceptionSources.Threat)
+            .GetPerceptions(CoreSegregatedPerceptionSources.PossibleThreat)
             .Select(x => {
+                if (x.TryGetEntityId(out var entityId) && entityId == estimateOriginEntityId)
+                {
+                    // Don't consider entity itself as a threat
+                    // from its estimation point of view
+                    return null;
+                }
                 var knowledge = threatKnowledgeProvider.WhatAboutThreat(x);
                 return knowledge == null ? null : new ThreatPerception(x, knowledge);
             })

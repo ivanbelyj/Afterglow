@@ -10,6 +10,7 @@ public class ThreatManagerEditor : Editor
     private Vector2 scrollPosition;
     private bool requireConstantRepaint = true;
     private bool showThreatKnowledgeGlobal = false;
+    private bool sortByEntityId = false;
     private bool isInPlayMode;
     private Dictionary<Guid, bool> threatKnowledgeFoldoutStates = new Dictionary<Guid, bool>();
 
@@ -45,6 +46,13 @@ public class ThreatManagerEditor : Editor
         {
             EditorPrefs.SetBool("ThreatManagerEditor_RequireConstantRepaint", requireConstantRepaint);
         }
+
+        EditorGUI.BeginChangeCheck();
+        sortByEntityId = EditorGUILayout.Toggle("Sort by EntityId", sortByEntityId);
+        if (EditorGUI.EndChangeCheck())
+        {
+            // No need to save this preference as it's just a view preference
+        }
     }
 
     private void DrawThreatsSection()
@@ -74,11 +82,15 @@ public class ThreatManagerEditor : Editor
     {
         if (threatsInfo == null)
         {
-            EditorGUILayout.HelpBox("Threats list is null", MessageType.Warning);
+            EditorGUILayout.HelpBox("Threats list is null", MessageType.Info);
             return;
         }
 
-        if (threatsInfo.Count == 0)
+        var sortedThreats = sortByEntityId 
+            ? threatsInfo.OrderBy(t => t?.threatEstimate?.EntityId ?? Guid.Empty).ToList()
+            : threatsInfo.OrderByDescending(t => t?.targeting?.Utility ?? 0).ToList();
+
+        if (sortedThreats.Count == 0)
         {
             EditorGUILayout.HelpBox("No active threats detected", MessageType.Info);
             return;
@@ -98,7 +110,7 @@ public class ThreatManagerEditor : Editor
         EditorGUILayout.EndHorizontal();
 
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-        DrawAllThreats(threatsInfo, targetingResult);
+        DrawAllThreats(sortedThreats, targetingResult);
         EditorGUILayout.EndScrollView();
     }
 
@@ -296,7 +308,10 @@ public class ThreatManagerEditor : Editor
 
     private GUIStyle GetProbabilityStyle(float probability)
     {
-        var style = new GUIStyle(EditorStyles.label);
+        var style = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 11
+        };
         style.normal.textColor = Color.Lerp(new Color(0.2f, 0.8f, 1f), new Color(1f, 0.6f, 0f), probability);
         return style;
     }
@@ -308,9 +323,11 @@ public class ThreatManagerEditor : Editor
 
     private void DrawPropertyWithNullCheck(string label, string value, int labelWidth, GUIStyle valueStyle = null)
     {
+        valueStyle ??= GetErrorStyle();
+        
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
-        EditorGUILayout.LabelField(value ?? "Null", valueStyle ?? GetErrorStyle());
+        EditorGUILayout.LabelField(label, valueStyle, GUILayout.Width(labelWidth));
+        EditorGUILayout.LabelField(value ?? "Null", valueStyle);
         EditorGUILayout.EndHorizontal();
     }
 
@@ -431,8 +448,10 @@ public class ThreatManagerEditor : Editor
                 }
 
                 EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth / factorsPerRow - 10));
-                EditorGUILayout.LabelField($"{label}:", GUILayout.Width(70));
-                EditorGUILayout.LabelField($"{value:F2}", GetProbabilityStyle(value), GUILayout.Width(40));
+
+                var probabilityStyle = GetProbabilityStyle(value);
+                EditorGUILayout.LabelField($"{label}:", probabilityStyle, GUILayout.Width(70));
+                EditorGUILayout.LabelField($"{value:F2}", probabilityStyle, GUILayout.Width(40));
                 EditorGUILayout.EndHorizontal();
             }
             

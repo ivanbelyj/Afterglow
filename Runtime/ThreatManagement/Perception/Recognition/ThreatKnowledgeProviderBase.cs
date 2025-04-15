@@ -8,11 +8,15 @@ using static PerceptionMarkerUtilsCore;
 [RequireComponent(typeof(EntityProvider))]
 public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowledgeProvider
 {
+    private const string MovementSpeedStatisticName = "MovementSpeed";
+
     [SerializeField]
     private PerceptionStorageRegistrar perceptionStorageRegistrar;
 
     private ISegregatedMemoryProvider segregatedMemoryProvider;
     private EntityProvider entityProvider;
+
+    private ThreatKnowledgeStatisticsHelper statisticsHelper = new();
     
     private void Awake()
     {
@@ -23,6 +27,15 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         {
             Debug.LogError($"{nameof(perceptionStorageRegistrar)} is required");
         }
+
+        statisticsHelper.InitializeStatistics(
+            new List<PerceptionEntry>(),
+            new ThreatKnowledgeStatisticsHelper.ThreatStatistic(
+                MovementSpeedStatisticName,
+                perception => {
+                    var hasMovementSpeed = perception.TryGetMovementSpeed(out var movementSpeed);
+                    return (hasMovementSpeed, movementSpeed);
+                }));
     }
 
     public ThreatKnowledge WhatAboutThreat(PerceptionEntry perceptionEntry)
@@ -112,12 +125,21 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
 
         var actualPerceptions = GetActualPerceptions(perceptions);
 
-        var (threatAwareness, threatFocus) = GetThreatAttentionData(
+        var (threatAwareness, threatFocus, actualMovementSpeed) = GetActualThreatData(
             entityProvider.Entity.Id,
             actualPerceptions
         );
+        
+        statisticsHelper.UpdateStatistics(actualPerceptions);
+        var maxStatisticMovementSpeed = statisticsHelper
+            .Get(MovementSpeedStatisticName)
+            .MaxValue ?? 0;
+
+        var optimisticMovementSpeed = Math.Min(actualMovementSpeed, maxStatisticMovementSpeed);
+        var pessimisticMovementSpeed = Math.Max(actualMovementSpeed, maxStatisticMovementSpeed);
 
         return new ThreatPerceptionCompoundData() {
+            MovementSpeed = new(optimisticMovementSpeed, pessimisticMovementSpeed),
             PerceptorSuspicion = GetEntitySuspicion(perceptions),
             Potentials = GetEntityIndividualPotentials(actualPerceptions),
 
@@ -147,12 +169,13 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
             .Any();
     }
 
-    private (float threatAwareness, float threatFocus) GetThreatAttentionData(
+    private (float threatAwareness, float threatFocus, float movementSpeed) GetActualThreatData(
         Guid targetEntityId,
         List<PerceptionEntry> actualPerceptions)
     {
         float? maxThreatAwareness = null;
         float? maxThreatFocus = null;
+        float? maxMovementSpeed = null;
 
         foreach (var perception in actualPerceptions)
         {
@@ -172,9 +195,17 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
                     maxThreatFocus = attentionData.ThreatFocus;
                 }
             }
+            
+            bool hasMovementSpeed = perception.TryGetMovementSpeed(out var movementSpeed);
+
+            if (hasMovementSpeed
+                && (maxMovementSpeed == null || movementSpeed > maxMovementSpeed))
+            {
+                maxMovementSpeed = movementSpeed;
+            }
         }
 
-        return (maxThreatAwareness ?? 0, maxThreatFocus ?? 0);
+        return (maxThreatAwareness ?? 0, maxThreatFocus ?? 0, maxMovementSpeed ?? 0);
     }
 
     private AgentAttentionData GetRelevantAttentionData(

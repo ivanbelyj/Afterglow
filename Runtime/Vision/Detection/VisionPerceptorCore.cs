@@ -29,7 +29,14 @@ public abstract class VisionPerceptorCore : MonoBehaviour
     private LayerMask sightLayerMask;
     private VisionSensoryMemoryStorage sensoryMemory;
 
+    private IEnricherProvider<Sight> enricherProvider;
+
     public VisionSensoryMemoryStorage SensoryMemory => sensoryMemory;
+
+    private void Awake()
+    {
+        enricherProvider = GetEnricherProvider();
+    }
 
     private void Start()
     {
@@ -37,7 +44,30 @@ public abstract class VisionPerceptorCore : MonoBehaviour
         InitializeRadiusDetection();
     }
 
+    private void Update()
+    {
+        EnrichSensoryMemoryPerceptions();
+    }
+
     protected abstract IRadiusDetectorFilter GetVisionRadiusDetectorFilter();
+    
+    protected virtual IEnricherProvider<Sight> GetEnricherProvider()
+    {
+        return GetComponent<IEnricherProvider<Sight>>();
+    }
+
+    private void EnrichSensoryMemoryPerceptions()
+    {
+        foreach (var perceptedSighData in SensoryMemory.PerceptionSightDataByEntityId.Values)
+        {
+            foreach (var enricher in enricherProvider.GetEnrichers())
+            {
+                enricher.EnrichPerception(
+                    perceptedSighData.PerceptionEntry, 
+                    perceptedSighData.Sight);
+            }
+        }
+    }
 
     private void InitializeRadiusDetection()
     {
