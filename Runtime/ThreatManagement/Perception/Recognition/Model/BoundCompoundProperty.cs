@@ -4,16 +4,26 @@ using UnityEngine;
 [Serializable]
 public struct BoundCompoundProperty
 {
-    public float MinEstimate { get; set; }
-    public float MaxEstimate { get; set; }
+    public float MinEstimate { get; private set; }
+    public float MaxEstimate { get; private set; }
 
     /// <summary>
     /// Adjusts estimation between min and max. [0; 1]
     /// </summary>
-    public float Optimism { get; set; }
+    public float Optimism { get; private set; }
 
     public BoundCompoundProperty(float minEstimated, float maxEstimated, float optimism = 0.5f)
     {
+        if (minEstimated > maxEstimated)
+        {
+            throw new ArgumentException("MinEstimate cannot be greater than MaxEstimate.");
+        }
+        
+        if (optimism < 0f || optimism > 1f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(optimism), "Optimism must be in [0; 1].");
+        }
+
         MinEstimate = minEstimated;
         MaxEstimate = maxEstimated;
         Optimism = optimism;   
@@ -61,8 +71,8 @@ public struct BoundCompoundProperty
     {
         return new BoundCompoundProperty 
         {
-            MinEstimate = (left.MinEstimate + right.MinEstimate) / 2,
-            MaxEstimate = (left.MaxEstimate + right.MaxEstimate) / 2,
+            MinEstimate = left.MinEstimate * right.MinEstimate,
+            MaxEstimate = left.MaxEstimate * right.MaxEstimate,
             Optimism = GetWeightedOptimism(left, right)
         };
     }
@@ -80,5 +90,10 @@ public struct BoundCompoundProperty
         }
 
         return (c1.Optimism * weight1 + c2.Optimism * weight2) / (weight1 + weight2);
+    }
+
+    public override string ToString()
+    {
+        return $"[{MinEstimate:F2}, {MaxEstimate:F2}] : {Optimism:P0} → {GetValue():F2}";
     }
 }

@@ -16,10 +16,7 @@ public class VisionPerceptionEnricher : IPerceptionEnricher<Sight>
         perception.Set(EntityType, sight.EntityType);
         if (sight.TryGetAgentAttentionData(out var attentionData))
         {
-            foreach (var attentionDataItem in attentionData)
-            {
-                perception.AddAgentAttentionData(attentionDataItem);
-            }
+            perception.SetAgentAttentionData(attentionData);
         }
 
         // TODO: not that type

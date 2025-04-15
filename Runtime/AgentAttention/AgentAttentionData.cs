@@ -27,4 +27,11 @@ public record AgentAttentionData
     /// 1 = the entity is fully focused on the target
     /// </summary>
     public float ThreatFocus { get; set; }
+
+    public override string ToString()
+    {
+        return $"Attention on {TargetEntityId}: " +
+            $"Awareness={ThreatAwareness:F2}, " +
+            $"Focus={ThreatFocus:F2}";
+    }
 }

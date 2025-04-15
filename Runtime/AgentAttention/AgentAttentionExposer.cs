@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -19,10 +20,8 @@ public class AgentAttentionExposer : MonoBehaviour
 
     public void Tick()
     {
-        foreach (var attentionData in entityAttentionDataProvider.GetAttentionData())
-        {
-            sight.AddAgentAttentionData(attentionData);
-        }
+        Debug.Log("EXPOSE " + string.Join(", ", entityAttentionDataProvider.GetAttentionData().ToList()));
+        sight.SetAgentAttentionData(entityAttentionDataProvider.GetAttentionData().ToList());
     }
 
     protected virtual IAgentAttentionDataProvider GetEntityAttentionDataProvider()

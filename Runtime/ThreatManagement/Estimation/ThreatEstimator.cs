@@ -31,7 +31,7 @@ public class ThreatEstimator
             * data.ThreatAwareness
             * data.ThreatFocus;
         var threatPosition = threatPerception.Position;
-        return new(threatPerception) 
+        return new(threatPerception)
         {
             EntityId = threatPerception.EntityId,
             ThreatType = EntityTypeToThreatType(threatPerception.EntityType),

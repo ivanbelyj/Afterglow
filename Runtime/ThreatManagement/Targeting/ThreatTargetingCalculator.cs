@@ -14,37 +14,64 @@ public class ThreatTargetingCalculator
 
     public ThreatTargetingResult CalculateTargeting(IEnumerable<ThreatEstimate> threats)
     {
+        var (targeted, ignored) = SegregateEstimates(threats);
         return new()
         {
-            OrderedTargetingEstimates = GetTargetingEstimates(threats)
+            OrderedTargetingEstimates = targeted
                 .OrderByDescending(x => x.Utility)
                 .ToArray(),
+            Ignored = ignored
         };
     }
 
-    private IEnumerable<ThreatTargetingEstimate> GetTargetingEstimates(IEnumerable<ThreatEstimate> threats)
+    private (List<ThreatTargetingEstimate> targeted, List<ThreatEstimate> ignored)
+        SegregateEstimates(IEnumerable<ThreatEstimate> threats)
     {
-        foreach (var threat in threats.Where(x => x.Probability >= parameters.threatProbabilityThreshold))
-        {
-            float? maxPotentialUtility = null;
-            foreach (var threatPotential in threat.Potentials)
-            {
-                var utility = CalculateThreatUtility(threat, threatPotential);
+        var targeted = new List<ThreatTargetingEstimate>();
+        var ignored = new List<ThreatEstimate>();
 
-                if (maxPotentialUtility == null || utility > maxPotentialUtility)
-                {
-                    maxPotentialUtility = utility;
-                }
+        foreach (var threat in threats)
+        {
+            if (threat.Probability < parameters.threatProbabilityThreshold)
+            {
+                ignored.Add(threat);
+                continue;
             }
+
+            var maxPotentialUtility = GetMaxPotentialUtility(threat);
+            
             if (maxPotentialUtility != null)
             {
-                yield return new ThreatTargetingEstimate()
+                targeted.Add(new ThreatTargetingEstimate()
                 {
                     ThreatEstimate = threat,
                     Utility = maxPotentialUtility.Value,
-                };
+                });
+            }
+            else 
+            {
+                // Ignore threats without potentials
+                ignored.Add(threat);
+            }
+
+        }
+
+        return (targeted, ignored);
+    }
+
+    private float? GetMaxPotentialUtility(ThreatEstimate threat)
+    {
+        float? maxPotentialUtility = null;
+        foreach (var threatPotential in threat.Potentials)
+        {
+            var utility = CalculateThreatUtility(threat, threatPotential);
+
+            if (maxPotentialUtility == null || utility > maxPotentialUtility)
+            {
+                maxPotentialUtility = utility;
             }
         }
+        return maxPotentialUtility;
     }
 
     private float CalculateThreatUtility(

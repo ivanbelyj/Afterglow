@@ -19,9 +19,6 @@ public record ThreatProcessingResult
     public ThreatTargetingResult Targeting { get; set; }
 }
 
-/// <summary>
-/// Data about a threat intended for debugging visualization
-/// </summary>
 public record ThreatInfo
 {
     public ThreatEstimate threatEstimate;
@@ -90,20 +87,19 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
         HandleThreats(currentProcessingResult);
     }
 
-    #if UNITY_EDITOR
     public List<ThreatInfo> GetThreatsInfo()
     {
-        return currentProcessingResult?.CurrentThreatEstimates
+        return currentProcessingResult?.Targeting
+            .OrderedTargetingEstimates
             .Select(x => new ThreatInfo() {
-                threatEstimate = x,
-                targeting = currentProcessingResult
-                    .Targeting
-                    .OrderedTargetingEstimates
-                    .FirstOrDefault(y => y.ThreatEstimate == x)
+                targeting = x,
+                threatEstimate = x.ThreatEstimate
             })
+            .Concat(currentProcessingResult?.Targeting.Ignored
+                .Select(x => new ThreatInfo() { threatEstimate = x })
+                ?? Array.Empty<ThreatInfo>())
             .ToList();
     }
-    #endif
 
     // Internal to use the method in debugging visualization
     internal SpatialAwarenessPosition GetEstimateOriginPosition()
@@ -134,23 +130,30 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
 
     IEnumerable<AgentAttentionData> IAgentAttentionDataProvider.GetAttentionData()
     {
-        var estimates = currentProcessingResult.Targeting.OrderedTargetingEstimates;
-        if (estimates.Length > 0)
-        {
-            var primaryTarget = currentProcessingResult.Targeting.TargetedThreat;
-            yield return new AgentAttentionData() {
-                TargetEntityId = primaryTarget.ThreatEstimate.EntityId,
-                ThreatAwareness = 1f,
-                ThreatFocus = 1f,
-            };
-        }
+        var estimates = currentProcessingResult
+            .Targeting
+            .OrderedTargetingEstimates
+            .Select(x => new { estimate =  x.ThreatEstimate, utility = x.Utility })
+            .Concat(currentProcessingResult
+                .Targeting
+                .Ignored
+                .Select(x => new { estimate = x, utility = 0f }));
         
-        for (int i = 1; i < estimates.Length; i++)
+        var currentTarget = currentProcessingResult
+            .Targeting
+            .TargetedThreat;
+
+        var maxUtility = currentTarget?.Utility ?? 0f;
+        
+        foreach (var estimate in estimates)
         {
+            var focusDecrease = Mathf.Approximately(maxUtility, 0f)
+                ? 0
+                : (estimate.utility / maxUtility);
             yield return new AgentAttentionData() {
-                TargetEntityId = estimates[i].ThreatEstimate.EntityId,
+                TargetEntityId = estimate.estimate.EntityId,
                 ThreatAwareness = 1f,
-                ThreatFocus = 0,
+                ThreatFocus = 1f - focusDecrease,
             };
         }
     }

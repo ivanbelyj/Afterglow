@@ -7,10 +7,10 @@ public static class SightAgentAttentionDataExtensions
     public static bool TryGetAgentAttentionData(
         this Sight sight,
         out List<AgentAttentionData> entityAttentionData)
-        => sight.TryGetList(SightDataKeys.AgentAttention, out entityAttentionData);
+        => sight.TryGet(SightDataKeys.AgentAttention, out entityAttentionData);
 
-    public static void AddAgentAttentionData(
+    public static void SetAgentAttentionData(
         this Sight sight,
-        AgentAttentionData entityAttentionData)
-        => sight.AddToList(SightDataKeys.AgentAttention, entityAttentionData);
+        List<AgentAttentionData> entityAttentionData)
+        => sight.Set(SightDataKeys.AgentAttention, entityAttentionData);
 }

@@ -3,5 +3,5 @@ using UnityEngine;
 public static class ThreatPerceptionEntryDataKeys
 {
     public const string EntitySuspicion = nameof(EntitySuspicion);
-    public const string AgentAttentionDataKey = nameof(AgentAttentionDataKey);
+    public const string AgentAttention = nameof(AgentAttention);
 }

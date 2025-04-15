@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Collections;
 
 [CustomEditor(typeof(PerceptionTrackingStorage))]
 public class PerceptionTrackingStorageEditor : Editor
@@ -236,17 +237,32 @@ public class PerceptionTrackingStorageEditor : Editor
 
         foreach (var kvp in data)
         {
-            DrawPerceptionDataRow(kvp.Key, kvp.Value?.ToString() ?? "null");
+            DrawPerceptionDataRow(kvp.Key, kvp.Value);
         }
 
         EditorGUI.indentLevel--;
     }
 
-    private void DrawPerceptionDataRow(string key, string value)
+    private void DrawPerceptionDataRow(string key, object value)
     {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(key, GUILayout.Width(150));
-        EditorGUILayout.LabelField(value, wrapTextStyle);
+        
+        if (value is IEnumerable enumerable && !(value is string))
+        {
+            EditorGUILayout.BeginVertical();
+            int index = 0;
+            foreach (var item in enumerable)
+            {
+                EditorGUILayout.LabelField($"  [{index++}]: {item?.ToString() ?? "null"}", wrapTextStyle);
+            }
+            EditorGUILayout.EndVertical();
+        }
+        else
+        {
+            EditorGUILayout.LabelField(value?.ToString() ?? "null", wrapTextStyle);
+        }
+        
         EditorGUILayout.EndHorizontal();
     }
 }

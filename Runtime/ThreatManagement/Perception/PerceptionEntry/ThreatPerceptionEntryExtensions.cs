@@ -21,10 +21,10 @@ public static class ThreatPerceptionEntryExtensions
     public static bool TryGetAgentAttentionData(
         this PerceptionEntry perceptionEntry,
         out List<AgentAttentionData> entityAttentionData)
-        => perceptionEntry.TryGetList(AgentAttentionDataKey, out entityAttentionData);
+        => perceptionEntry.TryGet(AgentAttention, out entityAttentionData);
 
-    public static void AddAgentAttentionData(
+    public static void SetAgentAttentionData(
         this PerceptionEntry perceptionEntry,
-        AgentAttentionData entityAttentionData)
-        => perceptionEntry.AddToList(AgentAttentionDataKey, entityAttentionData);
+        List<AgentAttentionData> entityAttentionData)
+        => perceptionEntry.Set(AgentAttention, entityAttentionData);
 }

@@ -9,7 +9,9 @@ public class ThreatManagerEditor : Editor
 {
     private Vector2 scrollPosition;
     private bool requireConstantRepaint = true;
+    private bool showThreatKnowledgeGlobal = false;
     private bool isInPlayMode;
+    private Dictionary<Guid, bool> threatKnowledgeFoldoutStates = new Dictionary<Guid, bool>();
 
     private void OnEnable()
     {
@@ -82,6 +84,19 @@ public class ThreatManagerEditor : Editor
             return;
         }
 
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(showThreatKnowledgeGlobal ? "Hide All Knowledge" : "Show All Knowledge", 
+            GUILayout.Width(150)))
+        {
+            showThreatKnowledgeGlobal = !showThreatKnowledgeGlobal;
+            foreach (var key in threatKnowledgeFoldoutStates.Keys.ToList())
+            {
+                threatKnowledgeFoldoutStates[key] = showThreatKnowledgeGlobal;
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         DrawAllThreats(threatsInfo, targetingResult);
         EditorGUILayout.EndScrollView();
@@ -108,23 +123,16 @@ public class ThreatManagerEditor : Editor
     private void DrawSingleThreat(ThreatInfo threatInfo, Guid? currentTargetId, ThreatTargetingResult targetingResult)
     {
         bool isCurrentTarget = IsCurrentTarget(threatInfo, currentTargetId);
-        bool isTargeted = IsTargeted(threatInfo, targetingResult);
-        bool isIgnored = !isTargeted && !isCurrentTarget;
+        bool isTargeted = threatInfo.targeting != null;
+        bool isIgnored = threatInfo.targeting == null;
 
         DrawThreatBox(threatInfo, isCurrentTarget, isTargeted, isIgnored);
     }
 
     private bool IsCurrentTarget(ThreatInfo threatInfo, Guid? currentTargetId)
     {
-        return currentTargetId.HasValue && 
+        return currentTargetId != null &&
                threatInfo.threatEstimate.EntityId == currentTargetId.Value;
-    }
-
-    private bool IsTargeted(ThreatInfo threatInfo, ThreatTargetingResult targetingResult)
-    {
-        return targetingResult?.OrderedTargetingEstimates != null && 
-               targetingResult.OrderedTargetingEstimates.Any(t => 
-                   t.ThreatEstimate.EntityId == threatInfo.threatEstimate.EntityId);
     }
 
     private void DrawThreatBox(ThreatInfo threatInfo, bool isCurrentTarget, bool isTargeted, bool isIgnored)
@@ -132,9 +140,13 @@ public class ThreatManagerEditor : Editor
         var boxStyle = CreateBoxStyle(isCurrentTarget, isTargeted, isIgnored);
         
         EditorGUILayout.BeginVertical(boxStyle);
+        
         DrawThreatHeader(threatInfo, isCurrentTarget, isTargeted, isIgnored);
         DrawThreatDetails(threatInfo, isTargeted, isCurrentTarget);
         DrawThreatPotentials(threatInfo.threatEstimate.Potentials);
+
+        DrawThreatKnowledgeSection(threatInfo);
+
         EditorGUILayout.EndVertical();
     }
 
@@ -175,9 +187,17 @@ public class ThreatManagerEditor : Editor
         
         DrawPropertyWithNullCheck("Type:", threat.ThreatType?.ToString() ?? "Null", 80, EditorStyles.boldLabel);
         DrawPropertyWithNullCheck("Distance:", threat.Distance.ToString(), 80, EditorStyles.boldLabel);
-        DrawPropertyWithNullCheck("Threat ID:", threat.EntityId.ToString(), 80);
+        DrawPropertyWithNullCheck("Threat ID:", threat.EntityId.ToString(), 80, GetThreatIdStyle());
         DrawUtilityField(threatInfo, isTargeted, isCurrentTarget);
         DrawProbabilityField(threat);
+    }
+
+    private GUIStyle GetThreatIdStyle()
+    {
+        return new GUIStyle(EditorStyles.label)
+        {
+            normal = { textColor = Color.Lerp(Color.cyan, Color.white, 0.3f) }
+        };
     }
 
     private void DrawUtilityField(ThreatInfo threatInfo, bool isTargeted, bool isCurrentTarget)
@@ -207,20 +227,23 @@ public class ThreatManagerEditor : Editor
 
     private void DrawThreatPotentials(ThreatPotentialEstimate[] potentials)
     {
-        EditorGUILayout.Space(5);
-        EditorGUILayout.LabelField("Threat Potentials:");
-
         if (potentials == null || potentials.Length == 0)
         {
             EditorGUILayout.HelpBox("No potentials data", MessageType.None);
             return;
         }
 
+        EditorGUILayout.LabelField("Threat Potentials:", EditorStyles.boldLabel);
         EditorGUI.indentLevel++;
+        
         foreach (var potential in potentials)
         {
-            EditorGUILayout.LabelField($"• {potential}");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("•", GUILayout.Width(15));
+            EditorGUILayout.LabelField(potential.ToString(), GUILayout.ExpandWidth(true));
+            EditorGUILayout.EndHorizontal();
         }
+        
         EditorGUI.indentLevel--;
     }
 
@@ -250,10 +273,23 @@ public class ThreatManagerEditor : Editor
     {
         var style = new GUIStyle(EditorStyles.label);
         
-        if (utility > 1.5f) style.normal.textColor = Color.red;
-        else if (utility > 1f) style.normal.textColor = new Color(1f, 0.5f, 0f);
-        else if (utility > 0.5f) style.normal.textColor = Color.yellow;
-        else style.normal.textColor = Color.green;
+        if (utility > 1.5f)
+        {
+            style.normal.textColor = Color.red;
+            style.fontStyle = FontStyle.Bold;
+        }
+        else if (utility > 1f)
+        {
+            style.normal.textColor = Color.red;
+        }
+        else if (utility > 0.5f)
+        {
+            style.normal.textColor = new Color(1f, 0.5f, 0f);
+        }
+        else
+        {
+            style.normal.textColor = Color.yellow;
+        }
             
         return style;
     }
@@ -261,11 +297,7 @@ public class ThreatManagerEditor : Editor
     private GUIStyle GetProbabilityStyle(float probability)
     {
         var style = new GUIStyle(EditorStyles.label);
-        
-        if (probability > 0.7f) style.normal.textColor = Color.red;
-        else if (probability > 0.4f) style.normal.textColor = Color.yellow;
-        else style.normal.textColor = Color.green;
-            
+        style.normal.textColor = Color.Lerp(new Color(0.2f, 0.8f, 1f), new Color(1f, 0.6f, 0f), probability);
         return style;
     }
 
@@ -280,5 +312,171 @@ public class ThreatManagerEditor : Editor
         EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
         EditorGUILayout.LabelField(value ?? "Null", valueStyle ?? GetErrorStyle());
         EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawThreatKnowledgeSection(ThreatInfo threatInfo)
+    {
+        if (threatInfo.threatEstimate?.ThreatPerception?.ThreatKnowledge == null)
+            return;
+
+        var threatId = threatInfo.threatEstimate.EntityId;
+        if (!threatKnowledgeFoldoutStates.ContainsKey(threatId))
+        {
+            threatKnowledgeFoldoutStates[threatId] = false;
+        }
+
+        var knowledge = threatInfo.threatEstimate.ThreatPerception.ThreatKnowledge;
+        var compoundData = knowledge.GetCompoundData();
+
+        bool showSection = showThreatKnowledgeGlobal || threatKnowledgeFoldoutStates[threatId];
+        
+        EditorGUI.BeginChangeCheck();
+        showSection = EditorGUILayout.Foldout(showSection, "Threat Knowledge", true, EditorStyles.foldoutHeader);
+        if (EditorGUI.EndChangeCheck())
+        {
+            threatKnowledgeFoldoutStates[threatId] = showSection;
+        }
+
+        if (!showSection)
+            return;
+
+        EditorGUI.indentLevel++;
+        
+        var textStyle = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 11,
+            margin = new RectOffset(0, 0, 0, 0),
+            padding = new RectOffset(0, 0, 0, 0)
+        };
+
+        EditorGUILayout.Space(3);
+        EditorGUILayout.LabelField("Compound Assessment:", EditorStyles.boldLabel);
+        
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Movement Speed:", textStyle, GUILayout.Width(120));
+        EditorGUILayout.LabelField(compoundData.MovementSpeed.ToString(), GetOptimismStyle(compoundData.MovementSpeed.Optimism), GUILayout.Width(180));
+        EditorGUILayout.EndHorizontal();
+
+        DrawProbabilityFactors(compoundData);
+
+        if (compoundData.Potentials != null && compoundData.Potentials.Count > 0)
+        {
+            EditorGUILayout.Space(3);
+            EditorGUILayout.LabelField("Threat Potentials:", EditorStyles.boldLabel);
+            
+            foreach (var potential in compoundData.Potentials)
+            {
+                EditorGUILayout.LabelField(
+                    $"{potential.PotentialName}: " +
+                    $"P={potential.Potential:F2}, " +
+                    $"R={potential.Radius:F1}m, " +
+                    $"T={potential.ActivationTimeSeconds:F1}s",
+                    textStyle);
+            }
+        }
+
+        if (knowledge.factors != null && knowledge.factors.Count > 0)
+        {
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Component Factors:", EditorStyles.boldLabel);
+            
+            for (int i = 0; i < knowledge.factors.Count; i++)
+            {
+                DrawFactor(knowledge.factors[i], textStyle);
+            }
+        }
+        
+        EditorGUI.indentLevel--;
+    }
+
+    private void DrawProbabilityFactors(ThreatPerceptionCompoundData data)
+    {
+        EditorGUILayout.LabelField("Probability Factors:", EditorStyles.boldLabel);
+        
+        // Create a compact grid layout for probability factors
+        int factorsPerRow = 2;
+        int factorCount = 4; // Presence, Suspicion, Awareness, Focus
+        int rows = Mathf.CeilToInt(factorCount / (float)factorsPerRow);
+
+        for (int i = 0; i < rows; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            
+            for (int j = 0; j < factorsPerRow; j++)
+            {
+                int index = i * factorsPerRow + j;
+                if (index >= factorCount) break;
+
+                string label = "";
+                float value = 0f;
+                
+                switch (index)
+                {
+                    case 0:
+                        label = "Presence";
+                        value = data.ThreatPresence.GetValue();
+                        break;
+                    case 1:
+                        label = "Suspicion";
+                        value = data.PerceptorSuspicion.GetValue();
+                        break;
+                    case 2:
+                        label = "Awareness";
+                        value = data.ThreatAwareness.GetValue();
+                        break;
+                    case 3:
+                        label = "Focus";
+                        value = data.ThreatFocus.GetValue();
+                        break;
+                }
+
+                EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth / factorsPerRow - 10));
+                EditorGUILayout.LabelField($"{label}:", GUILayout.Width(70));
+                EditorGUILayout.LabelField($"{value:F2}", GetProbabilityStyle(value), GUILayout.Width(40));
+                EditorGUILayout.EndHorizontal();
+            }
+            
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+
+    private void DrawFactor(ThreatPerceptionCompoundData factor, GUIStyle textStyle)
+    {
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Movement Speed:", textStyle, GUILayout.Width(120));
+        EditorGUILayout.LabelField(factor.MovementSpeed.ToString(), GetOptimismStyle(factor.MovementSpeed.Optimism), GUILayout.Width(180));
+        EditorGUILayout.EndHorizontal();
+
+        DrawProbabilityFactors(factor);
+
+        if (factor.Potentials != null && factor.Potentials.Count > 0)
+        {
+            EditorGUILayout.LabelField("Potentials:", EditorStyles.boldLabel);
+            foreach (var p in factor.Potentials)
+            {
+                EditorGUILayout.LabelField($"- {p.PotentialName}: {p.Potential:F2}", textStyle);
+            }
+        }
+        
+        EditorGUILayout.EndVertical();
+    }
+
+    private GUIStyle GetOptimismStyle(float optimism)
+    {
+        var style = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 11,
+            margin = new RectOffset(0, 0, 0, 0),
+            padding = new RectOffset(0, 0, 0, 0)
+        };
+
+        if (optimism > 0.5f)
+            style.normal.textColor = Color.Lerp(Color.yellow, new Color(1f, 0.647f, 0f), (optimism - 0.5f) / 0.5f);
+        else
+            style.normal.textColor = Color.Lerp(Color.cyan, Color.yellow, optimism / 0.5f);
+
+        return style;
     }
 }
