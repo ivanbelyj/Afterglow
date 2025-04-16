@@ -5,9 +5,8 @@ using System.Linq;
 using Mirror;
 using UnityEngine;
 
-[RequireComponent(typeof(SegregatedMemoryManager))]
 [RequireComponent(typeof(IRecognizer<Sight>))]
-public abstract class VisionPerceptorCore : MonoBehaviour
+public abstract class VisionPerceptorCore : PerceptorBase<Sight, PerceptedSightData, VisionSensoryMemoryStorage>
 {
     [SerializeField]
     [Tooltip(
@@ -27,20 +26,10 @@ public abstract class VisionPerceptorCore : MonoBehaviour
 
     [SerializeField]
     private LayerMask sightLayerMask;
-    private VisionSensoryMemoryStorage sensoryMemory;
-
-    private IEnricherProvider<Sight> enricherProvider;
-
-    public VisionSensoryMemoryStorage SensoryMemory => sensoryMemory;
-
-    private void Awake()
+    
+    protected override void Start()
     {
-        enricherProvider = GetEnricherProvider();
-    }
-
-    private void Start()
-    {
-        InitializeSensoryMemory();
+        base.Start();
         InitializeRadiusDetection();
     }
 
@@ -49,25 +38,12 @@ public abstract class VisionPerceptorCore : MonoBehaviour
         EnrichSensoryMemoryPerceptions();
     }
 
-    protected abstract IRadiusDetectorFilter GetVisionRadiusDetectorFilter();
-    
-    protected virtual IEnricherProvider<Sight> GetEnricherProvider()
+    protected override VisionSensoryMemoryStorage CreateSensoryMemoryStorage()
     {
-        return GetComponent<IEnricherProvider<Sight>>();
+        return new VisionSensoryMemoryStorage(GetComponent<IRecognizer<Sight>>());
     }
 
-    private void EnrichSensoryMemoryPerceptions()
-    {
-        foreach (var perceptedSighData in SensoryMemory.PerceptionSightDataByEntityId.Values)
-        {
-            foreach (var enricher in enricherProvider.GetEnrichers())
-            {
-                enricher.EnrichPerception(
-                    perceptedSighData.PerceptionEntry, 
-                    perceptedSighData.Sight);
-            }
-        }
-    }
+    protected abstract IRadiusDetectorFilter GetVisionRadiusDetectorFilter();
 
     private void InitializeRadiusDetection()
     {
@@ -96,13 +72,6 @@ public abstract class VisionPerceptorCore : MonoBehaviour
         //     OnRadiusEnter,
         //     OnRadiusExit,
         //     filters);
-    }
-
-    private void InitializeSensoryMemory()
-    {
-        sensoryMemory = new(GetComponent<IRecognizer<Sight>>());
-        GetComponent<PerceptionStorageRegistrar>()
-            .RegisterSensoryMemory(sensoryMemory);
     }
 
     private void OnRadiusEnter(object sender, RadiusDetectorEventArgs eventArgs)

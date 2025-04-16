@@ -11,7 +11,7 @@ public class SensoryMemoryManager : MonoBehaviour
         perceptionStorage = GetComponent<MemorySimulator>().PerceptionStorage;
     }
 
-    public void RegisterSensoryMemory(ISensoryMemoryStorage sensoryMemory)
+    public void RegisterSensoryMemory(ISensoryMemoryStorageCore sensoryMemory)
     {
         sensoryMemory.SensoryPerceptionReleased += OnSensoryPerceptionReleased;
     }

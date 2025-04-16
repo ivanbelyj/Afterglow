@@ -1,12 +1,15 @@
 using UnityEngine;
 using System;
 
-public record PerceptedSightData
+public record PerceptedSightData : IPerceptedSensoryData<Sight>
 {
     public float Distance { get; }
     public PerceptionEntry PerceptionEntry { get; }
 
     internal Sight Sight { get; }
+
+    PerceptionEntry IPerceptedSensoryData<Sight>.PerceptionEntry => PerceptionEntry;
+    Sight IPerceptedSensoryData<Sight>.Representation => Sight;
 
     public PerceptedSightData(float distance, PerceptionEntry perceptionEntry, Sight sight)
     {

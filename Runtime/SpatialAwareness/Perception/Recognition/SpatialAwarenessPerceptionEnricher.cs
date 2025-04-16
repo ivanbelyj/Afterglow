@@ -1,6 +1,5 @@
 using UnityEngine;
 
-using static PerceptionEntryMarkers;
 using static PerceptionEntrySpatialAwarenessDataKeys;
 
 public class SpatialAwarenessPerceptionEnricher : IPerceptionEnricher<Sight>

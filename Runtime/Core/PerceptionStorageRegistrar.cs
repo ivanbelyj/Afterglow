@@ -28,7 +28,7 @@ public class PerceptionStorageRegistrar : MonoBehaviour
         return perceptionSource;
     }
 
-    public void RegisterSensoryMemory(ISensoryMemoryStorage sensoryMemory)
+    public void RegisterSensoryMemory(ISensoryMemoryStorageCore sensoryMemory)
     {
         sensoryMemoryManager.RegisterSensoryMemory(sensoryMemory);
         segregatedMemoryManager.RegisterPerceptionSource(sensoryMemory);

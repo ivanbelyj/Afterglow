@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public interface ISensoryMemoryStorage : IPerceptionSource
+public interface ISensoryMemoryStorageCore : IPerceptionSource
 {
     event EventHandler<SensoryPerceptionEventArgs> SensoryPerceptionReleased;
 }

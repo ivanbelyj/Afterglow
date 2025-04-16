@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using static PerceptionMarkerUtilsCore;
+using static PerceptionMarkerUtils;
 
 [RequireComponent(typeof(EntityProvider))]
 public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowledgeProvider
