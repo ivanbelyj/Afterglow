@@ -5,9 +5,12 @@ public abstract class PerceptorBase<TRepresentation, TPerceptedData, TSensoryMem
     where TPerceptedData : IPerceptedSensoryData<TRepresentation>
     where TSensoryMemoryStorage : ISensoryMemoryStorage<TRepresentation>
 {
+    [SerializeField, Required]
+    private PerceptionStorageRegistrar perceptionStorageRegistrar;
+    
     protected TSensoryMemoryStorage sensoryMemory;
 
-    private IEnricherProvider<TRepresentation> enricherProvider;
+    private IPerceptionEnricherProvider<TRepresentation> enricherProvider;
 
     protected virtual void Awake()
     {
@@ -21,9 +24,9 @@ public abstract class PerceptorBase<TRepresentation, TPerceptedData, TSensoryMem
 
     protected abstract TSensoryMemoryStorage CreateSensoryMemoryStorage();
 
-    protected virtual IEnricherProvider<TRepresentation> GetEnricherProvider()
+    protected virtual IPerceptionEnricherProvider<TRepresentation> GetEnricherProvider()
     {
-        return GetComponent<IEnricherProvider<TRepresentation>>();
+        return GetComponent<IPerceptionEnricherProvider<TRepresentation>>();
     }
 
     protected void EnrichSensoryMemoryPerceptions()
@@ -42,7 +45,6 @@ public abstract class PerceptorBase<TRepresentation, TPerceptedData, TSensoryMem
     private void InitializeSensoryMemory()
     {
         sensoryMemory = CreateSensoryMemoryStorage();
-        GetComponent<PerceptionStorageRegistrar>()
-            .RegisterSensoryMemory(sensoryMemory);
+        perceptionStorageRegistrar.RegisterSensoryMemory(sensoryMemory);
     }
 }

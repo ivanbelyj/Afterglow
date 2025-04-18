@@ -30,6 +30,8 @@ public class VisionSensoryMemoryStorage : SensoryMemoryStorageBase<Guid, Percept
         
         Set(sight.EntityId, perceptedSightData);
 
+        Capture(perceptedSightData);
+
         SightCaptured?.Invoke(this, new() {
             PerceptedSightData = perceptedSightData,
             Sight = sight

@@ -17,12 +17,12 @@ public class PerceptionMarkerUtils
     }
 
     public static string[] GetSensationIdentifyingMarkers(
-        Guid sensationId)
+        Guid physicalImpactId)
     {
         return new[] {
             // Sensations are supposed to be not the most frequent perceptions,
             // so they can be not overwritten
-            $"soma-{sensationId}"
+            $"soma-{physicalImpactId}"
         };
     }
 }

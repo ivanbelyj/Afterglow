@@ -5,9 +5,11 @@ using System.Linq;
 using Mirror;
 using UnityEngine;
 
-[RequireComponent(typeof(IRecognizer<Sight>))]
 public abstract class VisionPerceptorCore : PerceptorBase<Sight, PerceptedSightData, VisionSensoryMemoryStorage>
 {
+    [SerializeField, Required]
+    private InterfaceField<IRecognizer<Sight>> recognizer;
+
     [SerializeField]
     [Tooltip(
         "Max vision radius that will be monitored. Typically checked infrequently " +
@@ -40,7 +42,7 @@ public abstract class VisionPerceptorCore : PerceptorBase<Sight, PerceptedSightD
 
     protected override VisionSensoryMemoryStorage CreateSensoryMemoryStorage()
     {
-        return new VisionSensoryMemoryStorage(GetComponent<IRecognizer<Sight>>());
+        return new VisionSensoryMemoryStorage(recognizer.Value);
     }
 
     protected abstract IRadiusDetectorFilter GetVisionRadiusDetectorFilter();

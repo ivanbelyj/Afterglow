@@ -5,9 +5,9 @@ using UnityEngine;
 
 using static PerceptionMarkerUtils;
 
-public class SomaticSensoryMemoryStorage : SensoryMemoryStorageBase<Guid, PerceptedSensationData, SensationData>
+public class SomaticSensoryMemoryStorage : SensoryMemoryStorageBase<Guid, PerceptedPhysicalImpact, PerceivedPhysicalImpact>
 {
-    public SomaticSensoryMemoryStorage(IRecognizer<SensationData> perceptionRecognizer)
+    public SomaticSensoryMemoryStorage(IRecognizer<PerceivedPhysicalImpact> perceptionRecognizer)
         : base(perceptionRecognizer)
     {
         
@@ -15,27 +15,28 @@ public class SomaticSensoryMemoryStorage : SensoryMemoryStorageBase<Guid, Percep
 
     public override string PerceptionSourceKey => CoreSegregatedPerceptionSources.SomaticSensoryMemory;
 
-    public void BeginSensation(SensationData sensation)
+    public void BeginSensation(PerceivedPhysicalImpact physicalImpact)
     {
-        var perceptedData = new PerceptedSensationData(sensation, ToPerception(sensation));
-        Set(sensation.SensationId, perceptedData);
+        var perceptedData = new PerceptedPhysicalImpact(physicalImpact, ToPerception(physicalImpact));
+        Set(physicalImpact.PhysicalImpactId, perceptedData);
+        Capture(perceptedData);
     }
 
-    public void EndSensation(Guid sensationId)
+    public void EndSensation(Guid id)
     {
-        var perceptedData = GetByKey(sensationId);
-        RemoveByKey(sensationId);
+        var perceptedData = GetByKey(id);
+        RemoveByKey(id);
         Release(perceptedData);
     }
 
-    protected override IEnumerable<string> GetPerceptionIdentifyingMarkers(SensationData sensation)
+    protected override IEnumerable<string> GetPerceptionIdentifyingMarkers(PerceivedPhysicalImpact physicalImpact)
     {
-        return GetSensationIdentifyingMarkers(sensation.SensationId);
+        return GetSensationIdentifyingMarkers(physicalImpact.PhysicalImpactId);
     }
 
-    protected override IEnumerable<string> GetPerceptionMarkers(SensationData sensation)
+    protected override IEnumerable<string> GetPerceptionMarkers(PerceivedPhysicalImpact physicalImpact)
     {
-        foreach (var marker in GetPerceptionIdentifyingMarkers(sensation))
+        foreach (var marker in GetPerceptionIdentifyingMarkers(physicalImpact))
         {
             yield return marker;
         }

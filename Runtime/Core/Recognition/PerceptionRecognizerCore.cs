@@ -39,7 +39,7 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
         return perception;
     }
 
-    protected abstract IEnricherProvider<TRepresentation> GetEnricherProvider<TRepresentation>();
+    protected abstract IPerceptionEnricherProvider<TRepresentation> GetEnricherProvider<TRepresentation>();
 
     protected virtual IPerceptionTrackingStorage GetTrackingStorage()
     {

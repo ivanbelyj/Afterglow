@@ -7,6 +7,7 @@ public abstract class SensoryMemoryStorageBase<TPerceptedDataKey, TPerceptedData
     : ISensoryMemoryStorage<TRepresentation>
     where TPerceptedData : IPerceptedSensoryData<TRepresentation>
 {
+    public event EventHandler<SensoryPerceptionEventArgs> SensoryPerceptionCaptured;
     public event EventHandler<SensoryPerceptionEventArgs> SensoryPerceptionReleased;
 
     private readonly Dictionary<TPerceptedDataKey, TPerceptedData> perceptedDataByKey = new();
@@ -42,13 +43,25 @@ public abstract class SensoryMemoryStorageBase<TPerceptedDataKey, TPerceptedData
         return perception;
     }
 
+    protected void Capture(TPerceptedData perceptedData)
+    {
+        SensoryPerceptionCaptured?.Invoke(
+            this,
+            CreateEventArgs(perceptedData));
+    }
+
     protected void Release(TPerceptedData perceptedData)
     {
         SensoryPerceptionReleased?.Invoke(
             this,
-            new(
-                GetPerceptionIdentifyingMarkers(perceptedData.Representation).ToArray(),
-                perceptedData.PerceptionEntry));
+            CreateEventArgs(perceptedData));
+    }
+
+    private SensoryPerceptionEventArgs CreateEventArgs(TPerceptedData perceptedData)
+    {
+        return new(
+            GetPerceptionIdentifyingMarkers(perceptedData.Representation).ToArray(),
+            perceptedData.PerceptionEntry);
     }
 
     protected TPerceptedData GetByKey(TPerceptedDataKey key)
