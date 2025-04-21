@@ -6,4 +6,5 @@ using UnityEngine;
 public interface IPerceptionTrackingStorage
 {
     void Track(PerceptionEntry perceptionEntry);
+    void RegisterHandler(IPerceptionTrackingHandler tracker);
 }

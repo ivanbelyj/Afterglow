@@ -20,6 +20,11 @@ public class SensoryMemoryManager : MonoBehaviour
         object sender,
         SensoryPerceptionEventArgs eventArgs)
     {
+        if (eventArgs.PerceptionEntry.TimestampTo == null)
+        {
+            eventArgs.PerceptionEntry.TimestampTo = GameTimeProvider.Instance.GetGameTime();
+        }
+
         perceptionStorage.AddOrReplace(
             eventArgs.IdentifyingMarkers,
             eventArgs.PerceptionEntry);

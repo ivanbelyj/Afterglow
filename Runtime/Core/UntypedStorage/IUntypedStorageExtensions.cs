@@ -14,6 +14,7 @@ public static class IUntypedStorageExtensions
         if (untypedStorage.Data.TryGetValue(key, out object objValue))
         {
             value = (T)objValue;
+
             return true;
         }
         value = default;

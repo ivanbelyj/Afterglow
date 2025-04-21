@@ -2,67 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum PerceptionTimeDistance
-{
-    RightNow,
-    Recently,
-    Earlier,
-    QuiteAWhileAgo,
-    LongAgo,
-    VeryLongAgo,
-    AtAnUnconsciousAge
-}
-
-public enum PerceptionState
-{
-    /// <summary>
-    /// Direct real-time perception. As a rule, it does not participate
-    /// in memory simulation.
-    /// </summary>
-    SensoryMemory = 0,
-    /// <summary>
-    /// The most relevant perceptions from the past at the current moment
-    /// </summary>
-    WorkMemory = 1,
-    /// <summary>
-    /// Common memory
-    /// </summary>
-    LongTermMemory = 2,
-    /// <summary>
-    /// Memory that is inaccessible, but will not be destructed
-    /// during the memory simulation
-    /// </summary>
-    DeepMemory = 3,
-    /// <summary>
-    /// Inaccessible memory that should be (or already) removed from the memory
-    /// </summary>
-    Destructed = 4
-}
-
-public record PerceptionStateChangedEventArgs
-{
-    public PerceptionEntry PerceptionEntry { get; set; }
-    public PerceptionState? OldState { get; set; }
-    public PerceptionState NewState { get; set; }
-
-    public PerceptionStateChangedEventArgs(
-        PerceptionEntry perceptionEntry,
-        PerceptionState? oldState,
-        PerceptionState newState)
-    {
-        PerceptionEntry = perceptionEntry;
-        OldState = oldState;
-        NewState = newState;
-    }
-}
-
 public class PerceptionEntry : IUntypedStorage
 {
     /// <summary>
     /// Typically called by memory simulation system
     /// </summary>
     public EventHandler<PerceptionStateChangedEventArgs> PerceptionStateChanges { get; set; }
-    
+
+    #region Fields
     // TODO: Make it not readonly and maybe build it dynamically
     private readonly string verbalRepresentationCore;
     private readonly PerceptionTimeDistance? timeDistance;
@@ -70,23 +17,32 @@ public class PerceptionEntry : IUntypedStorage
     private Dictionary<string, object> perceptionData;
     private HashSet<string> markers;
     private float accessibility = 1f;
-    private float? retentionIntensity;
+    private float? retentionIntensity = 0;
 
     private double? timestampFrom;
     private double? timestampTo;
 
     private bool isDestructed = false;
+    #endregion
 
-    public double? TimestampFrom {
+    #region Properties
+    public double? TimestampFrom
+    {
         get
         {
             EnsureNotDestructed();
             return timestampFrom;
         }
+        set
+        {
+            EnsureNotDestructed();
+            timestampFrom = value;
+        }
     }
 
-    public double? TimestampTo {
-        get 
+    public double? TimestampTo
+    {
+        get
         {
             EnsureNotDestructed();
             return timestampTo;
@@ -98,7 +54,10 @@ public class PerceptionEntry : IUntypedStorage
         }
     }
 
-    public PerceptionTimeDistance? TimeDistance {
+    public double? Timestamp => TimestampTo ?? TimestampFrom;
+
+    public PerceptionTimeDistance? TimeDistance
+    {
         get
         {
             EnsureNotDestructed();
@@ -123,7 +82,8 @@ public class PerceptionEntry : IUntypedStorage
         }
     }
 
-    public HashSet<string> Markers {
+    public HashSet<string> Markers
+    {
         get
         {
             EnsureNotDestructed();
@@ -143,7 +103,8 @@ public class PerceptionEntry : IUntypedStorage
     /// Set for temporary perceptions only. Null for memories that are considered
     /// permanent on the scale of the simulation.
     /// </summary>
-    public float? RetentionIntensity {
+    public float? RetentionIntensity
+    {
         get
         {
             EnsureNotDestructed();
@@ -198,14 +159,8 @@ public class PerceptionEntry : IUntypedStorage
 
     public bool IsDestructed => isDestructed;
 
-    public void Destruct()
+    public Dictionary<string, object> PerceptionData
     {
-        EnsureNotDestructed();
-        PerceptionStateChanges = null;
-        isDestructed = true;
-    }
-
-    public Dictionary<string, object> PerceptionData {
         get
         {
             EnsureNotDestructed();
@@ -222,21 +177,26 @@ public class PerceptionEntry : IUntypedStorage
 
     Dictionary<string, object> IUntypedStorage.Data => PerceptionData;
 
-    internal PerceptionEntry(double? timestamp)
+    #endregion
+
+    #region Constructors
+    internal PerceptionEntry(double? timestampFrom, double? timestampTo)
     {
-        timestampTo = timestamp;
+        this.timestampFrom = timestampFrom;
+        this.timestampTo = timestampTo;
     }
 
-    internal PerceptionEntry(string verbalRepresentation, double? timestamp)
+    internal PerceptionEntry(PerceptionTimeDistance timeDistance)
     {
-        verbalRepresentationCore = verbalRepresentation;
-        TimestampTo = timestamp;
-    }
-
-    internal PerceptionEntry(string verbalRepresentation, PerceptionTimeDistance timeDistance)
-    {
-        verbalRepresentationCore = verbalRepresentation;
         this.timeDistance = timeDistance;
+    }
+    #endregion
+
+    public void Destruct()
+    {
+        EnsureNotDestructed();
+        PerceptionStateChanges = null;
+        isDestructed = true;
     }
 
     public override string ToString()

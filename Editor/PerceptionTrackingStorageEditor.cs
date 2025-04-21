@@ -134,7 +134,7 @@ public class PerceptionTrackingStorageEditor : Editor
 
     private void DrawMainFoldouts()
     {
-        showPerceptions = EditorGUILayout.Foldout(showPerceptions, 
+        showPerceptions = EditorGUILayout.Foldout(showPerceptions,
             $"Perceptions ({GetPerceptionCount()})", true, foldoutStyle);
 
         if (showPerceptions)
@@ -185,8 +185,8 @@ public class PerceptionTrackingStorageEditor : Editor
     private string FormatEntityId(Guid entityId)
     {
         var idString = entityId.ToString();
-        return idString.Length > 12 ? 
-            $"{idString.Substring(0, 8)}...{idString.Substring(idString.Length - 4)}" : 
+        return idString.Length > 12 ?
+            $"{idString.Substring(0, 8)}...{idString.Substring(idString.Length - 4)}" :
             idString;
     }
 
@@ -203,12 +203,28 @@ public class PerceptionTrackingStorageEditor : Editor
         }
     }
 
+    string GetTimestampDisplayString(PerceptionEntry perception)
+    {
+        bool hasFrom = perception.TimestampFrom.HasValue;
+        bool hasTo = perception.TimestampTo.HasValue;
+
+        if (!hasFrom && !hasTo)
+            return "No timestamp";
+
+        if (hasFrom && hasTo)
+            return $"{perception.TimestampFrom.Value:F2} - {perception.TimestampTo.Value:F2}";
+
+        if (hasFrom)
+            return $"From: {perception.TimestampFrom.Value:F2}";
+
+        return $"To: {perception.TimestampTo.Value:F2}";
+    }
+
     private void DrawPerceptionHeader(PerceptionEntry perception)
     {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(perception.VerbalRepresentation, EditorStyles.boldLabel);
-        EditorGUILayout.LabelField(perception.TimestampTo?.ToString("F2") ?? "No timestamp", 
-            GUILayout.Width(100));
+        EditorGUILayout.LabelField(GetTimestampDisplayString(perception), GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -221,12 +237,12 @@ public class PerceptionTrackingStorageEditor : Editor
     {
         EditorGUILayout.LabelField("Markers:", EditorStyles.miniBoldLabel);
         EditorGUILayout.BeginVertical();
-        
+
         foreach (var marker in markers)
         {
             EditorGUILayout.LabelField(marker, markerStyle, GUILayout.ExpandWidth(true));
         }
-        
+
         EditorGUILayout.EndVertical();
     }
 
@@ -247,7 +263,7 @@ public class PerceptionTrackingStorageEditor : Editor
     {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(key, GUILayout.Width(150));
-        
+
         if (value is IEnumerable enumerable && !(value is string))
         {
             EditorGUILayout.BeginVertical();
@@ -262,7 +278,7 @@ public class PerceptionTrackingStorageEditor : Editor
         {
             EditorGUILayout.LabelField(value?.ToString() ?? "null", wrapTextStyle);
         }
-        
+
         EditorGUILayout.EndHorizontal();
     }
 }

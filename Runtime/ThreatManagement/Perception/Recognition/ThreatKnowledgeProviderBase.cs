@@ -8,16 +8,19 @@ using static PerceptionMarkerUtils;
 [RequireComponent(typeof(EntityProvider))]
 public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowledgeProvider
 {
-    private const string MovementSpeedStatisticName = "MovementSpeed";
+    // private const string MovementSpeedStatisticName = "MovementSpeed";
 
-    [SerializeField]
+    [SerializeField, Required]
     private PerceptionStorageRegistrar perceptionStorageRegistrar;
+
+    [SerializeField, Required]
+    private EntityConstructPerceptionManager entityConstructManager;
 
     private ISegregatedMemoryProvider segregatedMemoryProvider;
     private EntityProvider entityProvider;
 
-    private ThreatKnowledgeStatisticsHelper statisticsHelper = new();
-    
+    // private ThreatKnowledgeStatisticsHelper statisticsHelper = new();
+
     private void Awake()
     {
         segregatedMemoryProvider = GetSegregatedMemoryProvider();
@@ -28,14 +31,15 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
             Debug.LogError($"{nameof(perceptionStorageRegistrar)} is required");
         }
 
-        statisticsHelper.InitializeStatistics(
-            new List<PerceptionEntry>(),
-            new ThreatKnowledgeStatisticsHelper.ThreatStatistic(
-                MovementSpeedStatisticName,
-                perception => {
-                    var hasMovementSpeed = perception.TryGetMovementSpeed(out var movementSpeed);
-                    return (hasMovementSpeed, movementSpeed);
-                }));
+        // statisticsHelper.InitializeStatistics(
+        //     new List<PerceptionEntry>(),
+        //     new ThreatKnowledgeStatisticsHelper.ThreatStatistic(
+        //         MovementSpeedStatisticName,
+        //         perception =>
+        //         {
+        //             var hasMovementSpeed = perception.TryGetMovementSpeed(out var movementSpeed);
+        //             return (hasMovementSpeed, movementSpeed);
+        //         }));
     }
 
     public ThreatKnowledge WhatAboutThreat(PerceptionEntry perceptionEntry)
@@ -49,7 +53,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
             return null;
         }
 
-        TryAddEntityFactor(perceptionEntry, factors);     
+        TryAddEntityFactor(perceptionEntry, factors);
 
         // No factors - no threat
         if (!factors.Any())
@@ -81,7 +85,13 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
 
         if (hasEntityId)
         {
-            var factor = GetEntityIndividualFactor(entityId);
+            if (!perception.TryGetEntityType(out var entityType))
+            {
+                Debug.LogError(
+                    $"Perception with entity id set must also contain entity type");
+            }
+
+            var factor = GetEntityIndividualFactor(entityId, entityType);
             if (factor != null)
             {
                 factors.Add(factor);
@@ -113,7 +123,9 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         return perceptionStorageRegistrar.GetPerceptionsFromRegisteredStorageForEntity(entityId);
     }
 
-    private ThreatPerceptionCompoundData GetEntityIndividualFactor(Guid entityId)
+    private ThreatPerceptionCompoundData GetEntityIndividualFactor(
+        Guid entityId,
+        string entityType)
     {
         // All perceptions including past
         var perceptions = GetPerceptionsByEntity(entityId);
@@ -129,16 +141,20 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
             entityProvider.Entity.Id,
             actualPerceptions
         );
-        
-        statisticsHelper.UpdateStatistics(actualPerceptions);
-        var maxStatisticMovementSpeed = statisticsHelper
-            .Get(MovementSpeedStatisticName)
-            .MaxValue ?? 0;
+
+        // Update perception construct explicitly and get statistics
+        var construct = entityConstructManager.TouchEntityConstruct(
+            entityId,
+            entityType,
+            actualPerceptions);
+        var maxStatisticMovementSpeed = EntityConstructPerceptionManager
+            .GetMaxMovementSpeed(construct) ?? 0;
 
         var optimisticMovementSpeed = Math.Min(actualMovementSpeed, maxStatisticMovementSpeed);
         var pessimisticMovementSpeed = Math.Max(actualMovementSpeed, maxStatisticMovementSpeed);
 
-        return new ThreatPerceptionCompoundData() {
+        return new ThreatPerceptionCompoundData()
+        {
             MovementSpeed = new(optimisticMovementSpeed, pessimisticMovementSpeed),
             PerceptorSuspicion = GetEntitySuspicion(perceptions),
             Potentials = GetEntityIndividualPotentials(actualPerceptions),
@@ -156,7 +172,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         bool isVisible = IsVisibleCurrently(entityId);
         float minPresence = isVisible ? 1f : 0;
         float maxPresence = isVisible ? 1f : 0;
-        
+
         return new(minPresence, maxPresence);
     }
 
@@ -180,7 +196,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         foreach (var perception in actualPerceptions)
         {
             var attentionData = GetRelevantAttentionData(perception, targetEntityId);
-            
+
             if (attentionData != null)
             {
                 if (maxThreatAwareness == null
@@ -195,7 +211,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
                     maxThreatFocus = attentionData.ThreatFocus;
                 }
             }
-            
+
             bool hasMovementSpeed = perception.TryGetMovementSpeed(out var movementSpeed);
 
             if (hasMovementSpeed
@@ -217,7 +233,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         {
             return null;
         }
-        
+
         return allAttentionData.Find(x => x.TargetEntityId == targetEntityId);
     }
 
@@ -231,7 +247,8 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
     private List<ThreatFactorPotential> GetEntityIndividualPotentials(
         List<PerceptionEntry> perceptionsByEntity)
     {
-        return new() { 
+        return new()
+        {
             // Don't consider any individual or dynamic potentials for now.
             // There can be potentials built by seen weapons or learnt
             // threat's individual characteristics
@@ -242,7 +259,7 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
     {
         float? minSuspicion = null;
         float? maxSuspicion = null;
-        
+
         foreach (var perception in perceptions)
         {
             if (perception.TryGetEntitySuspicion(out var entitySuspicion))
@@ -269,7 +286,8 @@ public abstract class ThreatKnowledgeProviderBase : MonoBehaviour, IThreatKnowle
         {
             return null;
         }
-        return new ThreatPerceptionCompoundData() {
+        return new ThreatPerceptionCompoundData()
+        {
             MovementSpeed = entityTypeKnowledge.MovementSpeed,
             PerceptorSuspicion = entityTypeKnowledge.TypicalSuspicion,
             Potentials = entityTypeKnowledge.BasePotentials,

@@ -12,4 +12,10 @@ public static class CoreSegregatedPerceptionSources
     public const string SomaticSensoryMemory = nameof(SomaticSensoryMemory);
     public const string SpatialAwareness = nameof(SpatialAwareness);
     public const string PossibleThreat = nameof(PossibleThreat);
+
+    /// <summary>
+    /// Notice that using <see cref="IConstructPerceptionProvider"/> is more efficient
+    /// than getting perceptions via segregated memory provider
+    /// </summary>
+    public const string ConstructPerceptions = nameof(ConstructPerceptions);
 }

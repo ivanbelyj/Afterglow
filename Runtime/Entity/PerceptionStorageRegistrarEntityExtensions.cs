@@ -21,30 +21,27 @@ public static class PerceptionStorageRegistrarEntityExtensions
         Guid entityId)
     {
         var key = GetPerceptionSourceKeyByEntityId(entityId);
-        if (!registrar.segregatedMemoryManager.TryGetRegisteredPerceptionSource(
-            key,
-            out var perceptionSource))
-        {
-            perceptionSource = registrar.RegisterStorageForEntity(entityId);
-        }
 
-        return perceptionSource;
+        return registrar.EnsureRegistered(
+            key,
+            CreatePerceptionTrackerLazy(entityId)
+        );
     }
 
-    private static IPerceptionSource RegisterStorageForEntity(
-        this PerceptionStorageRegistrar registrar,
-        Guid entityId)
+    private static Lazy<PerceptionCollectionTrackerBase<List<PerceptionEntry>, IReadOnlyList<PerceptionEntry>>>
+        CreatePerceptionTrackerLazy(Guid entityId)
     {
-        return registrar.RegisterStorage(
-            GetPerceptionSourceKeyByEntityId(entityId),
-            new PerceptionListTracker(x => {
+        return new Lazy<PerceptionCollectionTrackerBase<List<PerceptionEntry>, IReadOnlyList<PerceptionEntry>>>(() => 
+        {
+            return new PerceptionListTracker(x => 
+            {
                 if (!x.TryGetEntityId(out var existingEntityId))
                 {
                     return false;
                 }
-
                 return entityId == existingEntityId;
-            }));
+            });
+        });
     }
 
     private static string GetPerceptionSourceKeyByEntityId(Guid entityId)

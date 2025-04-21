@@ -33,15 +33,12 @@ public class ThreatVisionRecognitionHandler : RecognitionHandlerBase
         if (!perception.CanBeThreat())
         {
             // Threat recognition not triggered
-            return new() {
-                Intensity = 0,
-                Salience = 0,
-            };
+            return new();
         }
 
         var knowledge = threatKnowledgeProvider.WhatAboutThreat(perception);
 
-        // TODO: 
+        // TODO:
         return new() {
             Intensity = 10f,
             Salience = 10f,

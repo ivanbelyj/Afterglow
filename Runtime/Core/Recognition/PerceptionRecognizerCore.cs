@@ -23,7 +23,7 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
         TRepresentation representation)
     {
         var perception = CreateBasePerception();
-        
+
         if (perception != null)
         {
             foreach (var enricher in GetEnricherProvider<TRepresentation>().GetEnrichers())
@@ -35,7 +35,7 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
 
             trackingStorage.Track(perception);
         }
-        
+
         return perception;
     }
 
@@ -48,7 +48,7 @@ public abstract class PerceptionRecognizerCore : MonoBehaviour
 
     protected virtual PerceptionEntry CreateBasePerception()
     {
-        return new(GameTimeProvider.Instance.GetGameTime());
+        return new(GameTimeProvider.Instance.GetGameTime(), null);
     }
 
     protected abstract float ToPerceptionRetentionIntensity(PerceptionRecognitionEstimate perceptionRecognition);

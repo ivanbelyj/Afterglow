@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public sealed class PerceptionDictionaryTracker<TKey> :
     PerceptionCollectionTrackerBase<Dictionary<PerceptionEntry, TKey>, IReadOnlyDictionary<TKey, PerceptionEntry>>
 {
-    private readonly Dictionary<TKey, PerceptionEntry> dictionary;
+    private readonly Dictionary<TKey, PerceptionEntry> dictionary = new();
     private readonly Func<PerceptionEntry, TKey> getKey;
 
     public PerceptionDictionaryTracker(

@@ -10,13 +10,13 @@ public class ThreatPerception : IThreatPerception
     public Guid EntityId => perceptionEntry.Get<Guid>(PerceptionEntryCoreDataKeys.EntityId);
 
     public string EntityType => perceptionEntry.Get<string>(PerceptionEntryCoreDataKeys.EntityType);
-    
+
     public SpatialAwarenessPosition Position
         => perceptionEntry.Get<SpatialAwarenessPosition>(PerceptionEntryCoreDataKeys.Position);
 
     public ThreatKnowledge ThreatKnowledge { get; private set; }
 
-    public double? Timestamp => perceptionEntry.TimestampTo ?? perceptionEntry.TimestampFrom;
+    public double? Timestamp => perceptionEntry.Timestamp;
 
     public bool IsDestructured => perceptionEntry.IsDestructed;
 
