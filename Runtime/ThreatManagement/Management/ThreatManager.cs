@@ -5,14 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public static class ColorExtensions
-{
-    public static Color WithAlpha(this Color color, float alpha)
-    {
-        return new Color(color.r, color.g, color.b, alpha);
-    }
-}
-
 public record ThreatProcessingResult
 {
     public List<ThreatEstimate> CurrentThreatEstimates { get; set; }
@@ -37,7 +29,7 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
 
     [SerializeField]
     private Sight sight;
-    
+
     private EntityProvider entityProvider;
 
     private IThreatPerceptionProvider threatPerceptionProvider;
@@ -91,7 +83,8 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
     {
         return currentProcessingResult?.Targeting
             .OrderedTargetingEstimates
-            .Select(x => new ThreatInfo() {
+            .Select(x => new ThreatInfo()
+            {
                 targeting = x,
                 threatEstimate = x.ThreatEstimate
             })
@@ -138,19 +131,20 @@ public class ThreatManager : MonoBehaviour, IAgentAttentionDataProvider
                 .Targeting
                 .Ignored
                 .Select(x => new { estimate = x, utility = 0f }));
-        
+
         var currentTarget = currentProcessingResult
             .Targeting
             .TargetedThreat;
 
         var maxUtility = currentTarget?.Utility ?? 0f;
-        
+
         foreach (var estimate in estimates)
         {
             var focusDecrease = Mathf.Approximately(maxUtility, 0f)
                 ? 0
                 : (1f - estimate.utility / maxUtility);
-            yield return new AgentAttentionData() {
+            yield return new AgentAttentionData()
+            {
                 TargetEntityId = estimate.estimate.EntityId,
                 ThreatAwareness = 1f,
                 ThreatFocus = 1f - focusDecrease,
