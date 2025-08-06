@@ -6,7 +6,8 @@
   "unity": "2021.3",
   "unityRelease": "9f1",
   "dependencies": {
-    "ivanbelyj.common-utilities": "git@github.com:ivanbelyj/CommonUtilitiesUnity.git"
+    "ivanbelyj.common-utilities": "git@github.com:ivanbelyj/CommonUtilitiesUnity.git",
+    "com.zor.utility-ai": "https://github.com/ZorPastaman/UtilityAI.git"
   },
   "author": {
     "name": "Ivan Belyj",
