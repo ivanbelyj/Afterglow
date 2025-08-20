@@ -78,13 +78,14 @@ public class ThreatEstimator
         {
             return CreateResult(distance <= Mathf.Epsilon ? 0f : null);
         }
-        
+
         float movementTime = distance / movementSpeed.GetValue();
-        
+
         return CreateResult(movementTime + (float)radiusThreat.ActivationTimeSeconds);
 
         ThreatPotentialEstimate CreateResult(float? timeDistance)
-            => new () {
+            => new()
+            {
                 Potential = (float)radiusThreat.Potential,
                 PotentialAvailableInSeconds = timeDistance
             };
@@ -96,7 +97,7 @@ public class ThreatEstimator
         Vector3 position2,
         float radius2)
     {
-        // TODO: take accessibility into account
+        // TODO: consider actual tilemap features / obstacles
         return Mathf.Max(
             0,
             Vector3.Distance(position1, position2) - radius1 - radius2);

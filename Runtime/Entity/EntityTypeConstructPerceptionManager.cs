@@ -2,24 +2,27 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EntityTypeConstructPerceptionManager : BaseConstructPerceptionManager
+public class EntityTypeConstructPerceptionManager :
+    ConstructPerceptionManagerBase<EntityTypeConstructPerceptionManager.EntityTypeConstructArgs>
 {
+    public struct EntityTypeConstructArgs
+    {
+        public string EntityType { get; set; }
+    }
+
     public const string MinTypicalMovementSpeed = nameof(MinTypicalMovementSpeed);
     public const string MaxTypicalMovementSpeed = nameof(MaxTypicalMovementSpeed);
     public const string MinTypicalSuspicion = nameof(MinTypicalSuspicion);
     public const string MaxTypicalSuspicion = nameof(MaxTypicalSuspicion);
 
-    private static readonly ConstructPerceptionAggregationConfig<float>[] aggregateConfigs = new[]
+    private static readonly ConstructPerceptionAggregationConfig<float, float>[] aggregateConfigs = new[]
     {
         // TODO: we need average by entities MaxMovementSpeed
-        ConstructPerceptionAggregationConfig<float>.AggregateMax(
+        ConstructPerceptionAggregationConfig<float, float>.AggregateMax(
             MaxTypicalMovementSpeed,
-            EntityConstructPerceptionManager.MaxMovementSpeedDataKey
+            EntityConstructPerceptionManager.MaxMovementSpeed
         )
     };
-
-    [SerializeField, Required]
-    private PerceptionConstructGate perceptionConstructGate;
 
     private void Start()
     {
@@ -29,40 +32,26 @@ public class EntityTypeConstructPerceptionManager : BaseConstructPerceptionManag
 
     public PerceptionEntry TouchEntityTypeConstruct(string entityType)
     {
-        return EnsurePushed(entityType);
+        return EnsureConstructPushed(new() { EntityType = entityType }).construct;
     }
 
-    public static string GetEntityTypeConstructKey(string entityType)
+    protected override string GetConstructKey(EntityTypeConstructArgs constructArgs)
     {
-        return $"entity-type-construct-{entityType}";
+        return $"entity-type-construct-{constructArgs.EntityType}";
     }
 
-    private PerceptionEntry EnsurePushed(string entityType)
-    {
-        return perceptionConstructGate.EnsureConstructPushed(
-            GetEntityTypeConstructKey(entityType),
-            (construct, newPerception)
-                => ShouldBeTrackedByConstruct(entityType, construct, newPerception),
-            HandleEntityTypeConstruct,
-            null);
-    }
-
-    private bool ShouldBeTrackedByConstruct(
-        string entityType,
+    protected override bool ShouldBeTrackedByConstruct(
+        EntityTypeConstructArgs constructArgs,
         PerceptionEntry construct,
         PerceptionEntry newPerception)
-    {
         // We are interested in entity construct perceptions of our type
-        return newPerception.Markers.Contains(
-                EntityConstructPerceptionManager.EntityConstructMarker)
+        => newPerception.Markers.Contains(
+                EntityConstructPerceptionManager.EntityConstruct)
             && newPerception.TryGetEntityType(out var newPerceptionEntityType)
-            && newPerceptionEntityType == entityType;
-    }
+            && newPerceptionEntityType == constructArgs.EntityType;
 
-    private void HandleEntityTypeConstruct(
+    protected override void HandleConstruct(
         PerceptionEntry hyperConstruct,
         PerceptionEntry relatedConstruct)
-    {
-        HandleConstruct(hyperConstruct, relatedConstruct, aggregateConfigs);
-    }
+        => HandleConstruct(hyperConstruct, relatedConstruct, aggregateConfigs);
 }

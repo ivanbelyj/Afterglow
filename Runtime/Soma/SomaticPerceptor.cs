@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(IRecognizer<PerceivedPhysicalImpact>))]
-public class SomaticPerceptor : PerceptorBase<PerceivedPhysicalImpact, PerceptedPhysicalImpact, SomaticSensoryMemoryStorage>
+public class SomaticPerceptor :
+    PerceptorBase<PerceivedPhysicalImpact, PerceptedPhysicalImpact, SomaticSensoryMemoryStorage>
 {
     [SerializeField, Required]
     private InterfaceField<IRecognizer<PerceivedPhysicalImpact>> recognizer;
@@ -13,7 +14,7 @@ public class SomaticPerceptor : PerceptorBase<PerceivedPhysicalImpact, Percepted
         sensoryMemory.BeginSensation(physicalImpact);
         sensoryMemory.EndSensation(physicalImpact.PhysicalImpactId);
     }
-    
+
     protected override SomaticSensoryMemoryStorage CreateSensoryMemoryStorage()
     {
         return new SomaticSensoryMemoryStorage(recognizer.Value);

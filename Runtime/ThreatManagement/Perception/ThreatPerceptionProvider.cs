@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -28,14 +27,15 @@ public class ThreatPerceptionProvider : MonoBehaviour, IThreatPerceptionProvider
         GetComponent<PerceptionStorageRegistrar>()
             .RegisterStorage(
                 CoreSegregatedPerceptionSources.PossibleThreat,
-                new PerceptionListTracker(x => x.CanBeThreat()));
+                new PerceptionListTracker(x => x.SatisfiesThreatNecessaryCondition()));
     }
 
     public IEnumerable<IThreatPerception> GetActualThreats(Guid estimateOriginEntityId)
     {
         return segregatedMemoryProvider
             .GetPerceptions(CoreSegregatedPerceptionSources.PossibleThreat)
-            .Select(x => {
+            .Select(x =>
+            {
                 if (x.TryGetEntityId(out var entityId) && entityId == estimateOriginEntityId)
                 {
                     // Don't consider entity itself as a threat

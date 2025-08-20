@@ -6,7 +6,7 @@ using static ThreatPerceptionEntryDataKeys;
 
 public static class ThreatPerceptionEntryExtensions
 {
-    public static bool CanBeThreat(this PerceptionEntry perception)
+    public static bool SatisfiesThreatNecessaryCondition(this PerceptionEntry perception)
     {
         return perception.HasEntityId()
             && perception.TryGetEntityType(out _)

@@ -1,18 +1,19 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PerceptionTrackingStorage : MonoBehaviour, IPerceptionTrackingStorage
 {
     private readonly List<IPerceptionTrackingHandler> handlers = new();
-    private PerceptionListTracker wholePerceptions;
+    private PerceptionListTracker allPerceptions;
 
-    public PerceptionListTracker WholePerceptions => wholePerceptions;
+    public PerceptionListTracker AllPerceptions => allPerceptions;
 
     private void Awake()
     {
         // Track all incoming perceptions
-        wholePerceptions = new(x => true);
-        RegisterHandler(wholePerceptions);
+        allPerceptions = new(x => true);
+        RegisterHandler(allPerceptions);
     }
 
     public void Track(PerceptionEntry perceptionEntry)
@@ -33,7 +34,7 @@ public class PerceptionTrackingStorage : MonoBehaviour, IPerceptionTrackingStora
         handlers.Add(tracker);
 
         // The handler must receive the relevant perceptions during registration
-        foreach (var perception in wholePerceptions.Collection)
+        foreach (var perception in allPerceptions.Collection)
         {
             TrackCore(tracker, perception);
         }

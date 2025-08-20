@@ -5,8 +5,8 @@ public record ThreatTargetingEstimate
     /// Low and moderate values (typically 0-1):
     /// <para>
     /// Beneficiality of threat elimination at the moment
-    /// (for example, dangerous threat in vulnerable state - high value;
-    /// weak threat - typically low value).
+    /// (for example, dangerous threat in its vulnerable state - high value;
+    /// not dangerous threat in its perfect state - typically low value).
     /// </para>
     /// 
     /// High values (typically 1-2):

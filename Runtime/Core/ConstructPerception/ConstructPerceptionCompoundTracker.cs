@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using UnityEngine;
 using static PerceptionEntryCoreDataKeys;
 
 /// <summary>
@@ -13,8 +13,7 @@ public class ConstructPerceptionCompoundTracker : IPerceptionTrackingHandler
 
     public void AddTracker(ConstructPerceptionTracker tracker)
     {
-        var constructKey = tracker.ConstructPerception.Get<string>(
-            Construct)
+        var constructKey = tracker.ConstructPerception.Get<string>(Construct)
             ?? throw new ArgumentException($"Construct perception must have {Construct} data key / value");
         trackersByConstructKey.Add(constructKey, tracker);
         tracker.ConstructPerception.PerceptionStateChanges += OnPerceptionStateChanged;
@@ -22,11 +21,13 @@ public class ConstructPerceptionCompoundTracker : IPerceptionTrackingHandler
 
     public void Track(PerceptionEntry perception)
     {
-        if (!perception.PerceptionData.ContainsKey(Construct))
-        {
-            // Skip all trackers because this perception is not a construct
-            return;
-        }
+        // Probably this condition was added by mistake,
+        // but there is a chance that it was added with some reason
+        // if (!perception.PerceptionData.ContainsKey(Construct))
+        // {
+        //     // Skip all trackers because this perception is not a construct
+        //     return;
+        // }
 
         foreach (var constructTracker in trackersByConstructKey.Values)
         {

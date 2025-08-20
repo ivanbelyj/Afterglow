@@ -6,7 +6,7 @@ using UnityEngine;
 public class ThreatTargetingCalculator
 {
     private readonly ThreatTargetingParameters parameters;
-    
+
     public ThreatTargetingCalculator(ThreatTargetingParameters parameters)
     {
         this.parameters = parameters;
@@ -39,7 +39,7 @@ public class ThreatTargetingCalculator
             }
 
             var maxPotentialUtility = GetMaxPotentialUtility(threat);
-            
+
             if (maxPotentialUtility != null)
             {
                 targeted.Add(new ThreatTargetingEstimate()
@@ -48,7 +48,7 @@ public class ThreatTargetingCalculator
                     Utility = maxPotentialUtility.Value,
                 });
             }
-            else 
+            else
             {
                 // Ignore threats without potentials
                 ignored.Add(threat);

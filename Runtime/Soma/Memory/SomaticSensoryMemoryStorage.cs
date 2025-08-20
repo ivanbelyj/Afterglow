@@ -5,12 +5,13 @@ using UnityEngine;
 
 using static PerceptionMarkerUtils;
 
-public class SomaticSensoryMemoryStorage : SensoryMemoryStorageBase<Guid, PerceptedPhysicalImpact, PerceivedPhysicalImpact>
+public class SomaticSensoryMemoryStorage :
+    SensoryMemoryStorageBase<Guid, PerceptedPhysicalImpact, PerceivedPhysicalImpact>
 {
     public SomaticSensoryMemoryStorage(IRecognizer<PerceivedPhysicalImpact> perceptionRecognizer)
         : base(perceptionRecognizer)
     {
-        
+
     }
 
     public override string PerceptionSourceKey => CoreSegregatedPerceptionSources.SomaticSensoryMemory;

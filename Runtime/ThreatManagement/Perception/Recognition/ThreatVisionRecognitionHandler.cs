@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class ThreatVisionRecognitionHandler : RecognitionHandlerBase
 {
+    [SerializeField]
+    [Tooltip(
+        "Max salience value for threat perceptions, " +
+        "used to set scale of the salience range")]
+    private float salienceScale = 1200;
+
     private IThreatKnowledgeProvider threatKnowledgeProvider;
 
     protected override void Awake()
@@ -30,7 +36,7 @@ public class ThreatVisionRecognitionHandler : RecognitionHandlerBase
 
     private PerceptionRecognitionEstimate PerceptThreat(PerceptionEntry perception)
     {
-        if (!perception.CanBeThreat())
+        if (!perception.SatisfiesThreatNecessaryCondition())
         {
             // Threat recognition not triggered
             return new();
@@ -38,10 +44,20 @@ public class ThreatVisionRecognitionHandler : RecognitionHandlerBase
 
         var knowledge = threatKnowledgeProvider.WhatAboutThreat(perception);
 
-        // TODO:
-        return new() {
-            Intensity = 10f,
-            Salience = 10f,
-        };
+        return knowledge == null
+            ? new() // Not a threat, recognition not triggered
+            : new()
+            {
+                Intensity = 1f,
+                Salience = GetThreatSalience(knowledge),
+            };
+    }
+
+    private float GetThreatSalience(ThreatKnowledge knowledge)
+    {
+        // TODO: implement threat salience calculation.
+        // Just get suspicion for now
+        var compoundData = knowledge.GetCompoundData();
+        return compoundData.PerceptorSuspicion.GetValue() * salienceScale;
     }
 }

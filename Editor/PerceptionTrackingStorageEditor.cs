@@ -100,7 +100,7 @@ public class PerceptionTrackingStorageEditor : Editor
     private PerceptionTrackingStorage GetTargetStorage()
     {
         var storage = (PerceptionTrackingStorage)target;
-        if (storage == null || storage.WholePerceptions == null)
+        if (storage == null || storage.AllPerceptions == null)
         {
             return null;
         }
@@ -109,7 +109,7 @@ public class PerceptionTrackingStorageEditor : Editor
 
     private List<PerceptionEntry> GetSortedPerceptions(PerceptionTrackingStorage storage)
     {
-        return storage.WholePerceptions.Collection
+        return storage.AllPerceptions.Collection
             .OrderByDescending(p => p.TimestampTo)
             .ToList();
     }
@@ -148,7 +148,7 @@ public class PerceptionTrackingStorageEditor : Editor
     private int GetPerceptionCount()
     {
         var storage = (PerceptionTrackingStorage)target;
-        return storage?.WholePerceptions?.Collection.Count ?? 0;
+        return storage?.AllPerceptions?.Collection.Count ?? 0;
     }
 
     private void DrawVisibilityToggles()
