@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 using static PerceptionEntryCoreDataKeys;
 
 public class VisionPerceptionEnricher : IPerceptionEnricher<Sight>
@@ -11,10 +8,10 @@ public class VisionPerceptionEnricher : IPerceptionEnricher<Sight>
 
         // TODO:
         // perception.VerbalRepresentation = GetVisionMemoryVerbalRepresentation(sight);
-        
+
         perception.Set(EntityId, sight.EntityId);
         perception.Set(EntityType, sight.EntityType);
-        
+
         if (sight.TryGetAgentAttentionData(out var attentionData))
         {
             perception.SetAgentAttentionData(attentionData);
