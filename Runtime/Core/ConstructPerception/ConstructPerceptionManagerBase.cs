@@ -7,14 +7,20 @@ public abstract class ConstructPerceptionManagerBase<TConstructArgs> : MonoBehav
     [SerializeField, Required]
     protected PerceptionConstructGate perceptionConstructGate;
 
+    protected abstract IEnumerable<ConstructPerceptionConfig> GetConfiguration();
+
     protected abstract string GetConstructKey(TConstructArgs constructArgs);
     protected abstract bool ShouldBeTrackedByConstruct(
         TConstructArgs constructArgs,
         PerceptionEntry construct,
         PerceptionEntry newPerception);
-    protected abstract void HandleConstruct(
+    protected virtual void HandleConstruct(
         PerceptionEntry construct,
-        PerceptionEntry newPerception);
+        PerceptionEntry newPerception)
+    {
+        AggregateConstructByConfigs(construct, newPerception, GetConfiguration());
+    }
+
     protected virtual void HandleConstructBeforePush(
         TConstructArgs constructArgs,
         PerceptionEntry constructPerception)
@@ -47,46 +53,14 @@ public abstract class ConstructPerceptionManagerBase<TConstructArgs> : MonoBehav
         return null;
     }
 
-    protected void HandleConstruct<TAggregatedValue, TValue>(
+    protected void AggregateConstructByConfigs(
         PerceptionEntry construct,
         PerceptionEntry newPerception,
-        IEnumerable<ConstructPerceptionAggregationConfig<TAggregatedValue, TValue>> configs)
+        IEnumerable<ConstructPerceptionConfig> configs)
     {
         foreach (var config in configs)
         {
-            AggregateValue(
-                construct,
-                newPerception,
-                config.AggregatedPerceptionDataKey,
-                config.NewPerceptionDataKey,
-                config.ShouldAggregate,
-                config.Aggregate);
-        }
-    }
-
-    protected void AggregateValue<TAggregatedValue, TValue>(
-        PerceptionEntry aggregatedPerception,
-        PerceptionEntry newPerception,
-        string aggregatedPerceptionDataKey,
-        string newPerceptionDataKey,
-        Func<TAggregatedValue, TValue, bool> shouldUpdate,
-        Func<TAggregatedValue, TValue, TAggregatedValue> aggregate)
-    {
-        if (newPerception.TryGet<TValue>(
-            newPerceptionDataKey,
-            out var newValue))
-        {
-            var hasExistingValue = aggregatedPerception.TryGet<TAggregatedValue>(
-                aggregatedPerceptionDataKey,
-                out var existingValue);
-            if (!hasExistingValue
-                || shouldUpdate == null
-                || shouldUpdate(existingValue, newValue))
-            {
-                aggregatedPerception.Set(
-                    aggregatedPerceptionDataKey,
-                    aggregate(existingValue, newValue));
-            }
+            config.ApplyToConstruct(construct, newPerception);
         }
     }
 }

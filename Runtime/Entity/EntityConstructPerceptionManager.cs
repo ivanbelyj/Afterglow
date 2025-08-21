@@ -18,46 +18,23 @@ public class EntityConstructPerceptionManager :
 
     // Perception data keys and markers
     public const string MaxMovementSpeed = nameof(MaxMovementSpeed);
+    public const string MinMovementSpeed = nameof(MinMovementSpeed);
     public const string EntityConstruct = nameof(EntityConstruct);
 
-    private static readonly ConstructPerceptionAggregationConfig<float, float>[] aggregateConfigs1 = new[]
-    {
-        ConstructPerceptionAggregationConfig<float, float>.AggregateMax(
-            MaxMovementSpeed,
-            ThreatPerceptionEntryDataKeys.MovementSpeed
-        ),
-        // TODO: temprorary
-        ConstructPerceptionAggregationConfig<float, float>.AggregateSum(
-            "TotalPain",
-            "Pain"
-        )
-        // TODO: temprorary
-        // ConstructPerceptionAggregationConfig<float>.AggregateMin(
-        //     "MinPain",
-        //     "Pain"
-        // )
-        // ConstructPerceptionAggregationConfig<float>.AggregateAverage(
-        //     "AveragePain",
-        //     "Pain"
-        // ),
-    };
+    private static readonly ConstructPerceptionConfig aggregateConfig;
 
-    private static readonly ConstructPerceptionAggregationConfig<int, float>[] aggregateConfigs2 = new[]
+    static EntityConstructPerceptionManager()
     {
-        ConstructPerceptionAggregationConfig<int, float>.AggregateCount(
-            "PainCount",
-            "Pain"
-        ),
-        // TODO: temprorary
-        // ConstructPerceptionAggregationConfig<float>.AggregateMin(
-        //     "MinPain",
-        //     "Pain"
-        // )
-        // ConstructPerceptionAggregationConfig<float>.AggregateAverage(
-        //     "AveragePain",
-        //     "Pain"
-        // ),
-    };
+        var builder = new ConstructPerceptionConfigBuilder();
+
+        builder
+            .AggregateMax<float>(MaxMovementSpeed, ThreatPerceptionEntryDataKeys.MovementSpeed)
+            // Todo: temporary config
+            .AggregateSum<float>("TotalPain", "Pain")
+            .AggregateCount("PainCount", "Pain");
+
+        aggregateConfig = builder.Build();
+    }
 
     public PerceptionEntry TouchEntityConstruct(Guid entityId, string entityType)
     {
@@ -109,27 +86,16 @@ public class EntityConstructPerceptionManager :
         PerceptionEntry construct,
         PerceptionEntry newPerception)
     {
-        HandleConstruct(construct, newPerception, aggregateConfigs1);
-        HandleConstruct(construct, newPerception, aggregateConfigs2);
+        aggregateConfig.ApplyToConstruct(construct, newPerception);
 
-        var totalPainExists = construct.TryGet<float>(
-            "TotalPain",
-            out var totalPain);
-        if (!totalPainExists)
-        {
-            totalPain = 0f;
-        }
-        var painCountExists = construct.TryGet<int>(
-            "PainCount",
-            out var painCount);
-        if (!painCountExists)
-        {
-            painCount = 1;
-        }
+        const int MinPainCountForAverage = 4;
 
-        construct.Set(
-            "AveragePain",
-            totalPain / painCount);
+        if (construct.TryGet<float>("TotalPain", out var totalPain) &&
+            construct.TryGet<int>("PainCount", out var painCount) &&
+            painCount >= MinPainCountForAverage)
+        {
+            construct.Set("AveragePain", totalPain / painCount);
+        }
     }
 
     protected override void HandleConstructBeforePush(
@@ -144,5 +110,10 @@ public class EntityConstructPerceptionManager :
         constructPerception.Set(
             PerceptionEntryCoreDataKeys.EntityType,
             constructArgs.EntityType);
+    }
+
+    protected override IEnumerable<ConstructPerceptionConfig> GetConfiguration()
+    {
+        yield return aggregateConfig;
     }
 }

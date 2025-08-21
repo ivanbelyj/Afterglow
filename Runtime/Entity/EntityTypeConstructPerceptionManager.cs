@@ -15,14 +15,22 @@ public class EntityTypeConstructPerceptionManager :
     public const string MinTypicalSuspicion = nameof(MinTypicalSuspicion);
     public const string MaxTypicalSuspicion = nameof(MaxTypicalSuspicion);
 
-    private static readonly ConstructPerceptionAggregationConfig<float, float>[] aggregateConfigs = new[]
+    private static readonly ConstructPerceptionConfig aggregateConfig;
+
+    static EntityTypeConstructPerceptionManager()
     {
-        // TODO: we need average by entities MaxMovementSpeed
-        ConstructPerceptionAggregationConfig<float, float>.AggregateMax(
-            MaxTypicalMovementSpeed,
-            EntityConstructPerceptionManager.MaxMovementSpeed
-        )
-    };
+        var builder = new ConstructPerceptionConfigBuilder();
+
+        builder
+            .AggregateMax<float>(
+                MaxTypicalMovementSpeed,
+                EntityConstructPerceptionManager.MaxMovementSpeed
+            );
+        // .AggregateMax<float>(MaxTypicalSuspicion, "SomeSuspicionKey")
+        // .AggregateMin<float>(MinTypicalSuspicion, "SomeSuspicionKey");
+
+        aggregateConfig = builder.Build();
+    }
 
     private void Start()
     {
@@ -53,5 +61,21 @@ public class EntityTypeConstructPerceptionManager :
     protected override void HandleConstruct(
         PerceptionEntry hyperConstruct,
         PerceptionEntry relatedConstruct)
-        => HandleConstruct(hyperConstruct, relatedConstruct, aggregateConfigs);
+    {
+        aggregateConfig.ApplyToConstruct(hyperConstruct, relatedConstruct);
+    }
+
+    protected override IEnumerable<ConstructPerceptionConfig> GetConfiguration()
+    {
+        yield return aggregateConfig;
+    }
+
+    // protected override void HandleConstructBeforePush(
+    //     EntityTypeConstructArgs constructArgs,
+    //     PerceptionEntry constructPerception)
+    // {
+    //     constructPerception.Set(
+    //         PerceptionEntryCoreDataKeys.EntityType,
+    //         constructArgs.EntityType);
+    // }
 }
